@@ -1,0 +1,29 @@
+package br.com.coretech.hero_api.repositories;
+
+import br.com.coretech.hero_api.entities.Usuario;
+import br.com.coretech.hero_api.enums.RoleUsuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long>
+{
+
+    /**
+     * Busca um usuário pelo seu email (login).
+     * Essencial para o Spring Security fazer a autenticação.
+     */
+    Optional<Usuario> findByEmail(String email);
+
+    /**
+     * Encontra todos os membros de uma família específica.
+     */
+    List<Usuario> findAllByFamiliaId(Long familiaId);
+
+    /**
+     * Encontra todos os usuários de uma família que têm um papel específico.
+     * Ex: "Me dê todos os MONITORES da família X"
+     */
+    List<Usuario> findAllByFamiliaIdAndRole(Long familiaId, RoleUsuario role);
+}
