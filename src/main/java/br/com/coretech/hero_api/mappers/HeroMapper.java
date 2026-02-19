@@ -1,23 +1,21 @@
 package br.com.coretech.hero_api.mappers;
 
-import br.com.coretech.hero_api.dtos.CarteiraResponseDTO;
-import br.com.coretech.hero_api.dtos.TransacaoDTO;
-import br.com.coretech.hero_api.dtos.UsuarioResponseDTO;
-import br.com.coretech.hero_api.entities.Carteira;
-import br.com.coretech.hero_api.entities.TransacaoDinheiro;
-import br.com.coretech.hero_api.entities.TransacaoFicha;
-import br.com.coretech.hero_api.entities.Usuario;
+import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
+import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
+import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
+import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
+import br.com.coretech.hero_api.financial.entities.TokenTransaction;
+import br.com.coretech.hero_api.users.entities.Usuario;
 import org.springframework.stereotype.Component;
-
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class HeroMapper {
 
-    public UsuarioResponseDTO toUsuarioDTO(Usuario usuario) {
+    public UserResponseDTO toUsuarioDTO(Usuario usuario) {
         if (usuario == null) return null;
 
-        UsuarioResponseDTO dto = new UsuarioResponseDTO();
+        UserResponseDTO dto = new UserResponseDTO();
         dto.setId(usuario.getId());
         dto.setNome(usuario.getNome());
         dto.setEmail(usuario.getEmail());
@@ -30,24 +28,24 @@ public class HeroMapper {
         return dto;
     }
 
-    public CarteiraResponseDTO toCarteiraDTO(Carteira carteira) {
-        if (carteira == null) return null;
+    public WalletResponseDTO toCarteiraDTO(Wallet wallet) {
+        if (wallet == null) return null;
 
-        CarteiraResponseDTO dto = new CarteiraResponseDTO();
-        dto.setId(carteira.getId());
-        dto.setSaldoFichas(carteira.getSaldoFichas());
-        dto.setSaldoDinheiro(carteira.getSaldoDinheiro());
+        WalletResponseDTO dto = new WalletResponseDTO();
+        dto.setId(wallet.getId());
+        dto.setSaldoFichas(wallet.getSaldoFichas());
+        dto.setSaldoDinheiro(wallet.getSaldoDinheiro());
 
-        if (carteira.getMenor() != null) {
-            dto.setMenorId(carteira.getMenor().getId());
-            dto.setMenorNome(carteira.getMenor().getNome());
+        if (wallet.getMenor() != null) {
+            dto.setMenorId(wallet.getMenor().getId());
+            dto.setMenorNome(wallet.getMenor().getNome());
         }
         return dto;
     }
 
     // Mapper genérico para histórico (Fichas)
-    public TransacaoDTO toTransacaoDTO(TransacaoFicha tx) {
-        TransacaoDTO dto = new TransacaoDTO();
+    public TransactionDTO toTransacaoDTO(TokenTransaction tx) {
+        TransactionDTO dto = new TransactionDTO();
         dto.setId(tx.getId());
         dto.setTipo(tx.getTipo());
         dto.setMotivo(tx.getMotivo());
@@ -57,8 +55,8 @@ public class HeroMapper {
     }
 
     // Mapper genérico para histórico (Dinheiro)
-    public TransacaoDTO toTransacaoDTO(TransacaoDinheiro tx) {
-        TransacaoDTO dto = new TransacaoDTO();
+    public TransactionDTO toTransacaoDTO(MoneyTransaction tx) {
+        TransactionDTO dto = new TransactionDTO();
         dto.setId(tx.getId());
         dto.setTipo(tx.getTipo());
         dto.setMotivo(tx.getMotivo());
