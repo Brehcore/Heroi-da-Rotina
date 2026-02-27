@@ -1,14 +1,14 @@
 package br.com.coretech.hero_api.users.dtos;
 
-import br.com.coretech.hero_api.users.RoleUsuario;
+import br.com.coretech.hero_api.users.enums.UserRole;
 import lombok.Data;
 
 @Data
 public class UserResponseDTO {
     private Long id;
-    private String nome;
+    private String name;
     private String email;
-    private RoleUsuario role;
-    private Long familiaId;
-    private String familiaNome; // Útil para exibir no app sem buscar outra entidade
+    private UserRole role;
+    private Long familyId;
+    private String familyName; // Útil para exibir no app sem buscar outra entidade
 }

@@ -15,18 +15,18 @@ public class TokenTransaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "carteira_id", nullable = false)
+    @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionType tipo; // CREDITO ou DEBITO
+    private TransactionType type; // CREDITO ou DEBITO
 
     @Column(nullable = false)
-    private Integer valor; // Ex: 14 (para "Distribuição Semanal") [cite: 38]
+    private Integer value; // Ex: 14 (para "Distribuição Semanal") [cite: 38]
 
     @Column(nullable = false)
-    private String motivo; // Ex: "Distribuição Semanal", "Leitura 30min" [cite: 51], "Multa" [cite: 55]
+    private String motive; // Ex: "Distribuição Semanal", "Leitura 30min" [cite: 51], "Multa" [cite: 55]
 
-    private LocalDateTime data = LocalDateTime.now();
+    private LocalDateTime date = LocalDateTime.now();
 }

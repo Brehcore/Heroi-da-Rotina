@@ -15,18 +15,18 @@ public class MoneyTransaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "carteira_id", nullable = false)
+    @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionType tipo; // CREDITO ou DEBITO
+    private TransactionType type; // CREDITO ou DEBITO
 
     @Column(nullable = false)
-    private Double valor; // Ex: 0.70 [cite: 46]
+    private Double value; // Ex: 0.70 [cite: 46]
 
     @Column(nullable = false)
-    private String motivo; // Ex: "Conversão de 1 ficha" [cite: 46], "Juros Semanais" [cite: 49]
+    private String motive; // Ex: "Conversão de 1 ficha" [cite: 46], "Juros Semanais" [cite: 49]
 
-    private LocalDateTime data = LocalDateTime.now();
+    private LocalDateTime date = LocalDateTime.now();
 }

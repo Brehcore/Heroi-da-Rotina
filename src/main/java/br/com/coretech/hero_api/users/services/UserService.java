@@ -1,61 +1,66 @@
 package br.com.coretech.hero_api.users.services;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
-import br.com.coretech.hero_api.users.UserRole;
+import br.com.coretech.hero_api.users.enums.UserRole;
 import br.com.coretech.hero_api.users.dtos.UserCreateDTO;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.entities.Family;
-import br.com.coretech.hero_api.users.entities.Usuario;
+import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.financial.repositories.WalletRepository;
 import br.com.coretech.hero_api.users.repositories.FamilyRepository;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
     private UserRepository userRepository;
-    @Autowired
     private FamilyRepository familyRepository;
-    @Autowired
-    private WalletRepository walletRepository; // Necessário para criar a carteira do menor
-    @Autowired
+    private WalletRepository walletRepository;
     private HeroMapper heroMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public UserResponseDTO criarUsuario(UserCreateDTO dto) {
-        // 1. Busca ou cria família (Lógica simplificada: assume que ID da familia vem no DTO)
-        Family family = familyRepository.findById(dto.getFamilyId())
-                .orElseThrow(() -> new RuntimeException("Família não encontrada"));
+    public UserResponseDTO createUser(UserCreateDTO dto) {
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
 
-        // 2. Cria Usuário
-        Usuario usuario = new Usuario();
-        usuario.setName(dto.getName());
-        usuario.setEmail(dto.getEmail());
-        usuario.setPassword(dto.getPassword()); // TODO: Usar BCryptPasswordEncoder aqui em produção!
-        usuario.setRole(dto.getRole());
-        usuario.setFamily(family);
+        // Criptografando a senha obrigatoriamente para o Spring Security funcionar depois
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(dto.getRole());
 
-        usuario = userRepository.save(usuario);
+        // 1. Busca família APENAS se o ID foi enviado
+        if (dto.getFamilyId() != null) {
+            Family family = familyRepository.findById(dto.getFamilyId())
+                    .orElseThrow(() -> new RuntimeException("Família não encontrada com ID: " + dto.getFamilyId()));
+            user.setFamily(family);
+        } else {
+            user.setFamily(null); // Permite criar usuário sem família inicial
+        }
+
+        // 2. Salva o Usuário
+        user = userRepository.save(user);
 
         // 3. Se for MENOR, cria a Wallet automaticamente
-        if (dto.getRole() == UserRole.MENOR) {
+        if (dto.getRole() == UserRole.MINOR) {
             Wallet wallet = new Wallet();
-            wallet.setMenor(usuario); // Vínculo OneToOne
-            wallet.setSaldoFichas(0);
-            wallet.setSaldoDinheiro(0.0);
-            wallet.setHistoricoFichas(new ArrayList<>());
-            wallet.setHistoricoDinheiro(new ArrayList<>());
+            wallet.setMinor(user); // Vínculo OneToOne
+            wallet.setTokenBalances(0);
+            wallet.setMoneyBalances(0.0);
+            wallet.setHistoricalTokens(new ArrayList<>());
+            wallet.setHistoricalMoney(new ArrayList<>());
 
             walletRepository.save(wallet);
         }
 
-        return heroMapper.toUsuarioDTO(usuario);
+        return heroMapper.toUserDTO(user);
     }
 }

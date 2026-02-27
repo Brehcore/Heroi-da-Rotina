@@ -76,29 +76,14 @@ public class JwtService {
     }
 
     private Key getSignInKey() {
-        try {
-            String content = "";
+        // Pega a string direto do application.properties e decodifica
+        byte[] keyBytes = io.jsonwebtoken.io.Decoders.BASE64.decode(secretKeyPath);
 
-            if (secretKeyPath != null && !secretKeyPath.startsWith("/")) {
-                content = Files.readString(Paths.get(secretKeyPath)).trim();
-                System.out.println("Debud: Chave lida do arquivo. Tamanho da chave: " + content.length());
-            } else {
-                content = secretKeyPath;
-            }
-
-            if (content == null || content.isBlank()) {
-                throw new RuntimeException("A chave JWT lida está vazia. Verifique o caminho: " + secretKeyPath);
-            }
-
-            byte[] keyBytes = io.jsonwebtoken.io.Decoders.BASE64.decode(content);
-
-            if (keyBytes.length < 32) {
-                throw new RuntimeException("A chave JWT precisa ter pelos 256 bits (32 bytes).");
-            }
-
-            return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler o arquivo do segredo em: " + secretKeyPath, e);
+        // Valida se a chave tem o tamanho mínimo exigido (256 bits / 32 bytes)
+        if (keyBytes.length < 32) {
+            throw new RuntimeException("A chave JWT precisa ter pelo menos 256 bits (32 bytes).");
         }
+        // Gera a chave criptográfica
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

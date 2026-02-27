@@ -8,14 +8,14 @@ import java.time.LocalDateTime;
 @Data
 public class TaskResponseDTO {
     private Long id;
-    private String titulo;
-    private String descricao;
-    private Integer recompensaFichas;
+    private String title;
+    private String description;
+    private Integer rawardTask;
     private TaskStatus status;
-    private Long menorId;
-    private String menorNome;
-    private LocalDateTime dataCriacao;
-    private LocalDateTime dataConclusao;
+    private Long minorId;
+    private String minorNome;
+    private LocalDateTime criatioDate;
+    private LocalDateTime completedDate;
 
     // Metodo estático para converter Entidade em DTO
     public static TaskResponseDTO fromEntity(Task task) {
@@ -23,19 +23,19 @@ public class TaskResponseDTO {
 
         TaskResponseDTO dto = new TaskResponseDTO();
         dto.setId(task.getId());
-        dto.setTitulo(task.getTitulo());
-        dto.setDescricao(task.getDescricao());
-        dto.setRecompensaFichas(task.getRecompensaFichas());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setRawardTask(task.getTokenRaward());
         dto.setStatus(task.getStatus());
 
         // Evita NullPointerException caso o menor não venha preenchido
-        if (task.getMenor() != null) {
-            dto.setMenorId(task.getMenor().getId());
-            dto.setMenorNome(task.getMenor().getNome());
+        if (task.getMinor() != null) {
+            dto.setMinorId(task.getMinor().getId());
+            dto.setMinorNome(task.getMinor().getName());
         }
 
-        dto.setDataCriacao(task.getDataCriacao());
-        dto.setDataConclusao(task.getDataConclusao());
+        dto.setCriatioDate(task.getCreationDate());
+        dto.setCompletedDate(task.getCompletedDate());
 
         return dto;
     }

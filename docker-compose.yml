@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:15
+    container_name: hero-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=brehcore
+      - POSTGRES_PASSWORD=QS01Cj0601
+      - POSTGRES_DB=hero_db
+    volumes:
+      # Trocamos a pasta física pelo volume interno blindado do Docker
+      - hero-db-data:/var/lib/postgresql/data
+
+# Avisamos ao Docker que esse volume existe
+volumes:
+  hero-db-data:

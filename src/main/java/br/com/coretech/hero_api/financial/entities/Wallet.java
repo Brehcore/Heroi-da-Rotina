@@ -16,22 +16,22 @@ public class Wallet {
     // Define quem é o dono desta carteira
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId // Pega o ID da relação @OneToOne como PK desta entidade
-    @JoinColumn(name = "usuario_id")
-    private User menor;
+    @JoinColumn(name = "user_id")
+    private User minor;
 
     // O saldo atual de fichas
     @Column(nullable = false)
-    private Integer saldoFichas = 0;
+    private Integer tokenBalances = 0;
 
     // O saldo atual do "cofre" em R$ [cite: 46]
     @Column(nullable = false)
-    private Double saldoDinheiro = 0.0;
+    private Double moneyBalances = 0.0;
 
     // O "extrato" de fichas
-    @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<TokenTransaction> historicoFichas;
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TokenTransaction> historicalTokens;
 
     // O "extrato" do cofre
-    @OneToMany(mappedBy = "carteira", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<MoneyTransaction> historicoDinheiro;
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MoneyTransaction> historicalMoney;
 }

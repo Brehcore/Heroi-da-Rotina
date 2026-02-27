@@ -13,5 +13,5 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
      * Permite buscar a carteira diretamente pelo ID do usuário menor.
      * Muito mais prático do que buscar o usuário e depois pegar a carteira.
      */
-    Optional<Wallet> findByMenorId(Long menorId);
+    Optional<Wallet> findByMinorId(Long minorId);
 }

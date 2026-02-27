@@ -16,7 +16,7 @@ import java.util.List;
  * aplicativo Android (usado pelos menores) quanto para a interface web Angular (usada pelos monitores).
  */
 @RestController
-@RequestMapping("/api/tarefas")
+@RequestMapping("/api/tasks")
 @CrossOrigin("*") // Libera acesso para o Angular
 public class TaskController {
 
@@ -32,9 +32,9 @@ public class TaskController {
      * @return ResponseEntity com a tarefa criada e status 201 (CREATED)
      */
     @PostMapping
-    public ResponseEntity<TaskResponseDTO> criar(@RequestBody TaskCreateDTO dto) {
-        TaskResponseDTO novaTarefa = taskService.criarTarefa(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novaTarefa);
+    public ResponseEntity<TaskResponseDTO> create(@RequestBody TaskCreateDTO dto) {
+        TaskResponseDTO newTask = taskService.createTask(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
     }
 
     // --- Ações de Fluxo (Mudança de Status) ---
@@ -45,9 +45,9 @@ public class TaskController {
      * @param id ID da tarefa a ser concluída
      * @return ResponseEntity com status 204 (NO CONTENT)
      */
-    @PatchMapping("/{id}/concluir")
-    public ResponseEntity<Void> concluirTarefa(@PathVariable Long id) {
-        taskService.concluirTarefa(id);
+    @PatchMapping("/{id}/conclude")
+    public ResponseEntity<Void> completeTask(@PathVariable Long id) {
+        taskService.completeTask(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -57,9 +57,9 @@ public class TaskController {
      * @param id ID da tarefa a ser aprovada
      * @return ResponseEntity com status 204 (NO CONTENT)
      */
-    @PatchMapping("/{id}/aprovar")
-    public ResponseEntity<Void> aprovarTarefa(@PathVariable Long id) {
-        taskService.aprovarTarefa(id);
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<Void> approveTask(@PathVariable Long id) {
+        taskService.aproveTask(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -69,24 +69,24 @@ public class TaskController {
      * Lista todas as tarefas de um menor específico (histórico completo).
      * Endpoint utilizado pelo aplicativo Android.
      *
-     * @param menorId ID do menor
+     * @param minorId ID do menor
      * @return Lista de todas as tarefas do menor
      */
-    @GetMapping("/menor/{menorId}")
-    public ResponseEntity<List<TaskResponseDTO>> listarTodasDoMenor(@PathVariable Long menorId) {
-        return ResponseEntity.ok(taskService.listarPorMenor(menorId));
+    @GetMapping("/minor/{minorId}")
+    public ResponseEntity<List<TaskResponseDTO>> listAllTasksForMinor(@PathVariable Long minorId) {
+        return ResponseEntity.ok(taskService.listForMinor(minorId));
     }
 
     /**
      * Lista apenas as tarefas pendentes de um menor específico.
      * Endpoint utilizado no dashboard principal do aplicativo Android.
      *
-     * @param menorId ID do menor
+     * @param minorId ID do menor
      * @return Lista de tarefas pendentes do menor
      */
-    @GetMapping("/menor/{menorId}/pendentes")
-    public ResponseEntity<List<TaskResponseDTO>> listarPendentesDoMenor(@PathVariable Long menorId) {
-        return ResponseEntity.ok(taskService.listarPendentesDoMenor(menorId));
+    @GetMapping("/minor/{minorId}/pending")
+    public ResponseEntity<List<TaskResponseDTO>> listAllPendingTasks(@PathVariable Long minorId) {
+        return ResponseEntity.ok(taskService.listPendingForMinor(minorId));
     }
 
     // --- Consultas (Angular - Monitor) ---
@@ -95,11 +95,11 @@ public class TaskController {
      * Lista todas as tarefas que necessitam de aprovação para uma família específica.
      * Endpoint utilizado no dashboard do monitor na interface Angular.
      *
-     * @param familiaId ID da família
+     * @param familyId ID da família
      * @return Lista de tarefas aguardando aprovação
      */
-    @GetMapping("/familia/{familiaId}/aprovar")
-    public ResponseEntity<List<TaskResponseDTO>> listarParaAprovacao(@PathVariable Long familiaId) {
-        return ResponseEntity.ok(taskService.listarParaAprovacao(familiaId));
+    @GetMapping("/family/{familyId}/approve")
+    public ResponseEntity<List<TaskResponseDTO>> listForApproval(@PathVariable Long familyId) {
+        return ResponseEntity.ok(taskService.listForApproval(familyId));
     }
 }

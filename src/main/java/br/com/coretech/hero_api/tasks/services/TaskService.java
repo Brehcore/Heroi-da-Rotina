@@ -4,7 +4,7 @@ import br.com.coretech.hero_api.financial.services.WalletService;
 import br.com.coretech.hero_api.tasks.dtos.TaskCreateDTO;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
-import br.com.coretech.hero_api.users.entities.Usuario;
+import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
@@ -31,23 +31,23 @@ public class TaskService {
      * Cria uma nova tarefa atribuída a um menor.
      */
     @Transactional
-    public TaskResponseDTO criarTarefa(TaskCreateDTO dto) {
-        Usuario menor = userRepository.findById(dto.getMenorId())
-                .orElseThrow(() -> new RuntimeException("Menor não encontrado com ID: " + dto.getMenorId()));
+    public TaskResponseDTO createTask(TaskCreateDTO dto) {
+        User menor = userRepository.findById(dto.getMinorId())
+                .orElseThrow(() -> new RuntimeException("Menor não encontrado com ID: " + dto.getMinorId()));
 
-        Usuario monitor = null;
-        if (dto.getMonitorCriadorId() != null) {
-            monitor = userRepository.findById(dto.getMonitorCriadorId())
+        User monitor = null;
+        if (dto.getMonitorCreatorId() != null) {
+            monitor = userRepository.findById(dto.getMonitorCreatorId())
                     .orElse(null);
         }
 
         Task task = new Task();
-        task.setTitulo(dto.getTitulo());
-        task.setDescricao(dto.getDescricao());
-        task.setRecompensaFichas(dto.getRecompensaFichas());
-        task.setMenor(menor);
-        task.setMonitorCriador(monitor);
-        task.setStatus(TaskStatus.PENDENTE);
+        task.setTitle(dto.getTitle());
+        task.setDescription(dto.getDescription());
+        task.setTokenRaward(dto.getTokenReward());
+        task.setMinor(menor);
+        task.setMonitorCreator(monitor);
+        task.setStatus(TaskStatus.PENDING);
 
         task = taskRepository.save(task);
         return TaskResponseDTO.fromEntity(task);
@@ -58,16 +58,16 @@ public class TaskService {
      * Muda o status para CONCLUIDA, indicando que aguarda aprovação.
      */
     @Transactional
-    public void concluirTarefa(Long tarefaId) {
+    public void completeTask(Long tarefaId) {
         Task task = taskRepository.findById(tarefaId)
                 .orElseThrow(() -> new RuntimeException("Task não encontrada com ID: " + tarefaId));
 
         // Regra de negócio: só pode concluir se estiver PENDENTE
-        if (task.getStatus() != TaskStatus.PENDENTE) {
+        if (task.getStatus() != TaskStatus.PENDING) {
             throw new RuntimeException("Apenas tarefas PENDENTES podem ser concluídas.");
         }
 
-        task.setStatus(TaskStatus.CONCLUIDA);
+        task.setStatus(TaskStatus.COMPLETED);
         taskRepository.save(task);
     }
 
@@ -75,45 +75,45 @@ public class TaskService {
      * Ação do MONITOR: Aprova a tarefa e deposita as fichas na carteira do menor.
      */
     @Transactional
-    public void aprovarTarefa(Long tarefaId) {
+    public void aproveTask(Long tarefaId) {
         Task task = taskRepository.findById(tarefaId)
                 .orElseThrow(() -> new RuntimeException("Task não encontrada com ID: " + tarefaId));
 
         // Regra de negócio: só pode aprovar se o menor tiver marcado como CONCLUIDA
-        if (task.getStatus() != TaskStatus.CONCLUIDA) {
+        if (task.getStatus() != TaskStatus.COMPLETED) {
             throw new RuntimeException("A task precisa estar CONCLUIDA para ser aprovada.");
         }
 
-        task.setStatus(TaskStatus.APROVADA);
+        task.setStatus(TaskStatus.APPROVED);
         taskRepository.save(task);
 
         // Se houver recompensa em fichas, integra com o WalletService
-        if (task.getRecompensaFichas() != null && task.getRecompensaFichas() > 0) {
-            walletService.depositarFichas(
-                    task.getMenor().getId(),
-                    task.getRecompensaFichas(),
-                    "Recompensa pela task: " + task.getTitulo()
+        if (task.getTokenRaward() != null && task.getTokenRaward() > 0) {
+            walletService.TokenDeposit(
+                    task.getMinor().getId(),
+                    task.getTokenRaward(),
+                    "Recompensa pela task: " + task.getTitle()
             );
         }
     }
 
     // --- Consultas (Read) ---
 
-    public List<TaskResponseDTO> listarPorMenor(Long menorId) {
-        return taskRepository.findAllByMenorId(menorId).stream()
+    public List<TaskResponseDTO> listForMinor(Long minorId) {
+        return taskRepository.findAllByMinorId(minorId).stream()
                 .map(TaskResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    public List<TaskResponseDTO> listarPendentesDoMenor(Long menorId) {
-        return taskRepository.findAllByMenorIdAndStatus(menorId, TaskStatus.PENDENTE).stream()
+    public List<TaskResponseDTO> listPendingForMinor(Long minorId) {
+        return taskRepository.findAllByMinorIdAndStatus(minorId, TaskStatus.PENDING).stream()
                 .map(TaskResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    public List<TaskResponseDTO> listarParaAprovacao(Long familiaId) {
+    public List<TaskResponseDTO> listForApproval(Long familyId) {
         // Busca as tarefas que o menor já fez (CONCLUIDA) e o monitor precisa revisar
-        return taskRepository.findAllByMenorFamiliaIdAndStatus(familiaId, TaskStatus.CONCLUIDA).stream()
+        return taskRepository.findAllByMinorFamilyIdAndStatus(familyId, TaskStatus.COMPLETED).stream()
                 .map(TaskResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }

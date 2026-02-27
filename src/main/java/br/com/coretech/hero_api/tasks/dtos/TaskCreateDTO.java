@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class TaskCreateDTO {
-    private String titulo;
-    private String descricao;
-    private Integer recompensaFichas;
-    private Long menorId; // Quem vai realizar a tarefa
-    private Long monitorCriadorId; // Quem criou
+    private String title;
+    private String description;
+    private Integer TokenReward;
+    private Long minorId; // Quem vai realizar a tarefa
+    private Long monitorCreatorId; // Quem criou
 }

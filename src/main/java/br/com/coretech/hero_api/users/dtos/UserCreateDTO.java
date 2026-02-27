@@ -1,6 +1,6 @@
 package br.com.coretech.hero_api.users.dtos;
 
-import br.com.coretech.hero_api.users.UserRole;
+import br.com.coretech.hero_api.users.enums.UserRole;
 import lombok.Data;
 
 @Data

@@ -1,7 +1,7 @@
 package br.com.coretech.hero_api.users.entities;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
-import br.com.coretech.hero_api.users.UserRole;
+import br.com.coretech.hero_api.users.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -43,11 +43,11 @@ public class User implements UserDetails {
 
     // A qual família este usuário pertence
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "familia_id", nullable = false)
+    @JoinColumn(name = "family_id")
     private Family family;
 
     // A wallet do usuário (só será preenchida se role = ROLE_MENOR)
-    @OneToOne(mappedBy = "menor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Wallet wallet;
 
 

@@ -14,9 +14,9 @@ public class Family {
     private Long id;
 
     @Column(nullable = false)
-    private String nomeFamilia; // Ex: "Família Vasconcelos" [cite: 7]
+    private String familyName; // Ex: "Família Soares" [cite: 7]
 
     // Uma família tem vários usuários (membros)
-    @OneToMany(mappedBy = "familia", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<User> membros;
+    @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<User> members;
 }

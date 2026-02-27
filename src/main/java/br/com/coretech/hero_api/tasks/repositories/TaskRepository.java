@@ -11,16 +11,16 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     /**
      * Para o app do Menor: Lista todas as tarefas dele.
      */
-    List<Task> findAllByMenorId(Long menorId);
+    List<Task> findAllByMinorId(Long minorId);
 
     /**
      * Para o app do Menor: Filtra as tarefas por status (ex: "PENDENTE").
      */
-    List<Task> findAllByMenorIdAndStatus(Long menorId, TaskStatus status);
+    List<Task> findAllByMinorIdAndStatus(Long minorId, TaskStatus status);
 
     /**
      * Para o app do Monitor: Mostra tarefas que precisam de aprovação.
      * Busca tarefas CONCLUIDAS de todos os menores da sua família.
      */
-    List<Task> findAllByMenorFamiliaIdAndStatus(Long familiaId, TaskStatus status);
+    List<Task> findAllByMinorFamilyIdAndStatus(Long familyId, TaskStatus status);
 }

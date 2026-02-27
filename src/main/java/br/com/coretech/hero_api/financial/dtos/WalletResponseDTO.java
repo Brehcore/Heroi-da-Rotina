@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class WalletResponseDTO {
     private Long id;
-    private Long menorId;
-    private String menorNome;
-    private Integer saldoFichas;
-    private Double saldoDinheiro;
+    private Long minorId;
+    private String minorName;
+    private Integer TokensBalance;
+    private Double MoneyBalance;
 }

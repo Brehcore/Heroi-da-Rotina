@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 @Data
 public class TransactionDTO {
     private Long id;
-    private TransactionType tipo; // CREDITO ou DEBITO
-    private String motivo;
-    private String valorFormatado; // Ex: "10 Fichas" ou "R$ 5,00"
-    private LocalDateTime data;
+    private TransactionType type; // CREDITO ou DEBITO
+    private String motive;
+    private String FormatedValue; // Ex: "10 Fichas" ou "R$ 5,00"
+    private LocalDateTime date;
 }

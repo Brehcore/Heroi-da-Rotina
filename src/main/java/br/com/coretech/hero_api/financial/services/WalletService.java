@@ -20,23 +20,23 @@ public class WalletService {
      * Adiciona fichas à carteira do menor e registra o histórico.
      */
     @Transactional
-    public void depositarFichas(Long menorId, Integer quantidade, String motivo) {
-        Wallet wallet = walletRepository.findByMenorId(menorId)
-                .orElseThrow(() -> new RuntimeException("Wallet não encontrada para o menor ID: " + menorId));
+    public void TokenDeposit(Long minorId, Integer amount, String motive) {
+        Wallet wallet = walletRepository.findByMinorId(minorId)
+                .orElseThrow(() -> new RuntimeException("Wallet não encontrada para o menor ID: " + minorId));
 
         // 1. Atualiza saldo
-        wallet.setSaldoFichas(wallet.getSaldoFichas() + quantidade);
+        wallet.setTokenBalances(wallet.getTokenBalances() + amount);
 
         // 2. Cria registro de transação
-        TokenTransaction transacao = new TokenTransaction();
-        transacao.setWallet(wallet);
-        transacao.setTipo(TransactionType.CREDITO);
-        transacao.setValor(quantidade);
-        transacao.setMotivo(motivo);
-        transacao.setData(LocalDateTime.now());
+        TokenTransaction transaction = new TokenTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(TransactionType.CREDIT);
+        transaction.setValue(amount);
+        transaction.setMotive(motive);
+        transaction.setDate(LocalDateTime.now());
 
         // 3. Adiciona à lista (CascadeType.ALL vai salvar a transação automaticamente)
-        wallet.getHistoricoFichas().add(transacao);
+        wallet.getHistoricalTokens().add(transaction);
 
         // 4. Salva tudo
         walletRepository.save(wallet);

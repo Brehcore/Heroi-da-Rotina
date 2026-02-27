@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * Fornece endpoints para consulta de saldo e dados das carteiras.
  */
 @RestController
-@RequestMapping("/api/carteiras")
+@RequestMapping("/api/wallets")
 @CrossOrigin("*") // Libera acesso para o Angular
 public class WalletController {
     
@@ -26,17 +26,14 @@ public class WalletController {
     /**
      * Busca o saldo e dados da carteira de um menor específico.
      *
-     * @param menorId ID do menor para buscar a carteira
+     * @param minorId ID do menor para buscar a carteira
      * @return ResponseEntity contendo os dados da carteira se encontrada, ou status 404 se não existir
      */
-    @GetMapping("/menor/{menorId}")
-    public ResponseEntity<WalletResponseDTO> buscarCarteira(@PathVariable Long menorId) {
-        return walletRepository.findByMenorId(menorId)
-                .map(heroMapper::toCarteiraDTO)
+    @GetMapping("/minor/{minorId}")
+    public ResponseEntity<WalletResponseDTO> searchWallets(@PathVariable Long minorId) {
+        return walletRepository.findByMinorId(minorId)
+                .map(heroMapper::toWalletDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    // OBS: O histórico de transações (extrato) já é complexo.
-    // TODO: criar um endpoint separado depois se a lista de transações ficar muito grande dentro do objeto Wallet.
 }

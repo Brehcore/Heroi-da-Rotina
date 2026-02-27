@@ -1,4 +1,4 @@
-package br.com.coretech.hero_api.users;
+package br.com.coretech.hero_api.users.enums;
 
 import lombok.Getter;
 
@@ -6,5 +6,5 @@ import lombok.Getter;
 public enum UserRole {
 
     MONITOR,
-    MENOR
+    MINOR
 }
