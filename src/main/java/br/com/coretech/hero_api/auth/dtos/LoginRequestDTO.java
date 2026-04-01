@@ -1,4 +1,4 @@
-package br.com.coretech.hero_api.users.dtos;
+package br.com.coretech.hero_api.auth.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenResponseDTO {
+public class LoginRequestDTO {
 
-    private String token;
+    private String email;
+    private String password;
 }

@@ -1,10 +1,14 @@
 package br.com.coretech.hero_api.users.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_family")
 public class Family {
@@ -16,7 +20,8 @@ public class Family {
     @Column(nullable = false)
     private String familyName; // Ex: "Família Soares" [cite: 7]
 
-    // Uma família tem vários usuários (membros)
-    @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Uma família tem vários usuários, e um usuário pode estar em várias famílias
+    @ManyToMany(mappedBy = "families")
+    @JsonIgnore
     private List<User> members;
 }

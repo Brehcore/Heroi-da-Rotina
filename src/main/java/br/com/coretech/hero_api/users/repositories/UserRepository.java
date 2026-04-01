@@ -2,7 +2,10 @@ package br.com.coretech.hero_api.users.repositories;
 
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.users.enums.UserRole;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long>
     /**
      * Encontra todos os membros de uma família específica.
      */
-    List<User> findAllByFamilyId(Long familyId);
+    List<User> findAllByFamiliesId(Long familiesId);
 
-    /**
-     * Encontra todos os usuários de uma família que têm um papel específico.
-     * Ex: "Me dê todos os MONITORES da família X"
-     */
-    List<User> findAllByFamilyIdAndRole(Long familyId, UserRole role);
+    @EntityGraph(attributePaths = "families")
+    @Query("SELECT u FROM User u WHERE u.email = :email")
+    Optional<User> findByEmailWithFamilies(@Param("email") String email);
 }

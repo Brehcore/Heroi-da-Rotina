@@ -1,6 +1,7 @@
 package br.com.coretech.hero_api.tasks.services;
 
 import br.com.coretech.hero_api.financial.services.WalletService;
+import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.tasks.dtos.TaskCreateDTO;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
@@ -8,7 +9,7 @@ import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +17,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
-    @Autowired
-    private TaskRepository taskRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private WalletService walletService;
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+    private final WalletService walletService;
+    private final HeroMapper heroMapper;
 
     /**
      * Cria uma nova tarefa atribuída a um menor.
@@ -44,13 +42,14 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(dto.getTitle());
         task.setDescription(dto.getDescription());
-        task.setTokenRaward(dto.getTokenReward());
+        task.setTokenReward(dto.getTokenReward());
         task.setMinor(menor);
         task.setMonitorCreator(monitor);
         task.setStatus(TaskStatus.PENDING);
 
         task = taskRepository.save(task);
-        return TaskResponseDTO.fromEntity(task);
+
+        return heroMapper.toTaskDTO(task);
     }
 
     /**
@@ -88,33 +87,31 @@ public class TaskService {
         taskRepository.save(task);
 
         // Se houver recompensa em fichas, integra com o WalletService
-        if (task.getTokenRaward() != null && task.getTokenRaward() > 0) {
+        if (task.getTokenReward() != null && task.getTokenReward() > 0) {
             walletService.TokenDeposit(
                     task.getMinor().getId(),
-                    task.getTokenRaward(),
+                    task.getTokenReward(),
                     "Recompensa pela task: " + task.getTitle()
             );
         }
     }
 
-    // --- Consultas (Read) ---
-
     public List<TaskResponseDTO> listForMinor(Long minorId) {
         return taskRepository.findAllByMinorId(minorId).stream()
-                .map(TaskResponseDTO::fromEntity)
+                .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
     }
 
     public List<TaskResponseDTO> listPendingForMinor(Long minorId) {
         return taskRepository.findAllByMinorIdAndStatus(minorId, TaskStatus.PENDING).stream()
-                .map(TaskResponseDTO::fromEntity)
+                .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
     }
 
     public List<TaskResponseDTO> listForApproval(Long familyId) {
         // Busca as tarefas que o menor já fez (CONCLUIDA) e o monitor precisa revisar
-        return taskRepository.findAllByMinorFamilyIdAndStatus(familyId, TaskStatus.COMPLETED).stream()
-                .map(TaskResponseDTO::fromEntity)
+        return taskRepository.findAllByMinorFamiliesIdAndStatus(familyId, TaskStatus.COMPLETED).stream()
+                .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
     }
 }

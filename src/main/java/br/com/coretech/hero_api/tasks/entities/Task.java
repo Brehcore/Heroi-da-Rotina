@@ -4,9 +4,13 @@ import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.users.entities.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_tasks")
 public class Task {
@@ -22,7 +26,7 @@ public class Task {
 
     // Quantas fichas esta tarefa paga como bônus [cite: 51, 52]
     @Column(nullable = false)
-    private Integer tokenRaward = 0;
+    private Integer tokenReward = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

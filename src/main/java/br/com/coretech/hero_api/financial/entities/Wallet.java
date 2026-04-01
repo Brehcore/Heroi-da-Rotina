@@ -1,11 +1,16 @@
 package br.com.coretech.hero_api.financial.entities;
 
 import br.com.coretech.hero_api.users.entities.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_wallet")
 public class Wallet {
@@ -14,6 +19,7 @@ public class Wallet {
     private Long id; //  O mesmo ID do Usuário (relação 1-para-1)
 
     // Define quem é o dono desta carteira
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId // Pega o ID da relação @OneToOne como PK desta entidade
     @JoinColumn(name = "user_id")

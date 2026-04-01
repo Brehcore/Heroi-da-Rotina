@@ -2,16 +2,16 @@ package br.com.coretech.hero_api.mappers;
 
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
+import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
+import br.com.coretech.hero_api.tasks.entities.Task;
 import br.com.coretech.hero_api.users.dtos.FamilyResponseDTO;
-import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
 import br.com.coretech.hero_api.financial.entities.TokenTransaction;
+import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.entities.Family;
 import br.com.coretech.hero_api.users.entities.User;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class HeroMapper {
@@ -25,10 +25,15 @@ public class HeroMapper {
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
 
-        if (user.getFamily() != null) {
-            dto.setFamilyId(user.getFamily().getId());
-            dto.setFamilyName(user.getFamily().getFamilyName());
+        // Verifica se a lista não é nula e se tem pelo menos 1 família dentro dela
+        if (user.getFamilies() != null && !user.getFamilies().isEmpty()) {
+            // Pega a primeira família da lista
+            Family primeiraFamilia = user.getFamilies().getFirst();
+
+            dto.setFamilyId(primeiraFamilia.getId());
+            dto.setFamilyName(primeiraFamilia.getFamilyName());
         }
+
         return dto;
     }
 
@@ -54,7 +59,7 @@ public class HeroMapper {
         dto.setType(tx.getType());
         dto.setMotive(tx.getMotive());
         dto.setDate(tx.getDate());
-        dto.setFormatedValue(tx.getValue() + " Fichas"); // Formata para leitura humana
+        dto.setFormattedValue(tx.getValue() + " Fichas"); // Formata para leitura humana
         return dto;
     }
 
@@ -65,22 +70,41 @@ public class HeroMapper {
         dto.setType(tx.getType());
         dto.setMotive(tx.getMotive());
         dto.setDate(tx.getDate());
-        dto.setFormatedValue("R$ " + String.format("%.2f", tx.getValue())); // Formata dinheiro
+        dto.setFormattedValue("R$ " + String.format("%.2f", tx.getValue())); // Formata dinheiro
         return dto;
     }
 
     public FamilyResponseDTO toFamilyDTO(Family family) {
         if (family == null) return null;
+
         FamilyResponseDTO dto = new FamilyResponseDTO();
         dto.setId(family.getId());
         dto.setFamilyName(family.getFamilyName());
 
-        if (family.getMembers() != null) {
-            List<UserResponseDTO> convertedListMembers = family.getMembers().stream() //Lista temporária para guardar os usuários na família
-                    .map(this::toUserDTO)
-                    .toList();
-            dto.setMembers(convertedListMembers);
+        dto.setMembers(null);
+
+        return dto;
+    }
+
+    public TaskResponseDTO toTaskDTO(Task task) {
+        if (task == null) return null;
+
+        TaskResponseDTO dto = new TaskResponseDTO();
+        dto.setId(task.getId());
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setRewardTask(task.getTokenReward());
+        dto.setStatus(task.getStatus());
+
+        // Evita NullPointerException caso o menor não venha preenchido
+        if (task.getMinor() != null) {
+            dto.setMinorId(task.getMinor().getId());
+            dto.setMinorName(task.getMinor().getName());
         }
+
+        dto.setCreationDate(task.getCreationDate());
+        dto.setCompletedDate(task.getCompletedDate());
+
         return dto;
     }
 }

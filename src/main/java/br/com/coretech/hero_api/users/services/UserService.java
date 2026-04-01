@@ -1,9 +1,9 @@
 package br.com.coretech.hero_api.users.services;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.enums.UserRole;
 import br.com.coretech.hero_api.users.dtos.UserCreateDTO;
-import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.entities.Family;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.mappers.HeroMapper;
@@ -16,15 +16,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private UserRepository userRepository;
-    private FamilyRepository familyRepository;
-    private WalletRepository walletRepository;
-    private HeroMapper heroMapper;
+    private final UserRepository userRepository;
+    private final FamilyRepository familyRepository;
+    private final WalletRepository walletRepository;
+    private final HeroMapper heroMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -41,9 +42,12 @@ public class UserService {
         if (dto.getFamilyId() != null) {
             Family family = familyRepository.findById(dto.getFamilyId())
                     .orElseThrow(() -> new RuntimeException("Família não encontrada com ID: " + dto.getFamilyId()));
-            user.setFamily(family);
+
+            // Embrulhando a família em uma lista mutável
+            user.setFamilies(new ArrayList<>(List.of(family)));
         } else {
-            user.setFamily(null); // Permite criar usuário sem família inicial
+            // Inicializando com lista vazia em vez de null (evita NullPointerException)
+            user.setFamilies(new ArrayList<>());
         }
 
         // 2. Salva o Usuário

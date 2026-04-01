@@ -2,6 +2,7 @@ package br.com.coretech.hero_api.users.entities;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.users.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -41,15 +42,20 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private UserRole role;
 
-    // A qual família este usuário pertence
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "family_id")
-    private Family family;
+    // A quais famílias este usuário pertence (Um monitor pode ter várias)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "tb_users_families",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "family_id")
+    )
+    @JsonIgnore
+    private List<Family> families;
 
     // A wallet do usuário (só será preenchida se role = ROLE_MENOR)
-    @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL)
     private Wallet wallet;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -59,25 +65,5 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }

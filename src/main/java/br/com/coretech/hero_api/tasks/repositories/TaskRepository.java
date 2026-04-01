@@ -22,5 +22,5 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      * Para o app do Monitor: Mostra tarefas que precisam de aprovação.
      * Busca tarefas CONCLUIDAS de todos os menores da sua família.
      */
-    List<Task> findAllByMinorFamilyIdAndStatus(Long familyId, TaskStatus status);
+    List<Task> findAllByMinorFamiliesIdAndStatus(Long familiesId, TaskStatus status);
 }

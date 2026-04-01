@@ -9,6 +9,6 @@ public class TransactionDTO {
     private Long id;
     private TransactionType type; // CREDITO ou DEBITO
     private String motive;
-    private String FormatedValue; // Ex: "10 Fichas" ou "R$ 5,00"
+    private String formattedValue; // Ex: "10 Fichas" ou "R$ 5,00"
     private LocalDateTime date;
 }

@@ -1,11 +1,15 @@
 package br.com.coretech.hero_api.financial.entities;
 
 import br.com.coretech.hero_api.financial.enums.TransactionType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "tb_token_transaction")
 public class TokenTransaction {
@@ -14,8 +18,10 @@ public class TokenTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
+
     private Wallet wallet;
 
     @Enumerated(EnumType.STRING)
