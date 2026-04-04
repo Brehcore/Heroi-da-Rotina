@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -44,10 +45,10 @@ public class UserService {
                     .orElseThrow(() -> new RuntimeException("Família não encontrada com ID: " + dto.getFamilyId()));
 
             // Embrulhando a família em uma lista mutável
-            user.setFamilies(new ArrayList<>(List.of(family)));
+            user.setFamilies(new HashSet<>(List.of(family)));
         } else {
             // Inicializando com lista vazia em vez de null (evita NullPointerException)
-            user.setFamilies(new ArrayList<>());
+            user.setFamilies(new HashSet<>());
         }
 
         // 2. Salva o Usuário

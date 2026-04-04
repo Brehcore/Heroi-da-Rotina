@@ -1,6 +1,7 @@
 package br.com.coretech.hero_api.financial.services;
 
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
+import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.financial.entities.TokenTransaction;
 import br.com.coretech.hero_api.financial.enums.TransactionType;
@@ -23,6 +24,7 @@ public class WalletService {
      * Busca os detalhes da carteira de um menor e converte para DTO.
      * É aqui que o HeroMapper passa a ter uso nesta classe.
      */
+    @Transactional(readOnly = true)
     public WalletResponseDTO getWalletByMinorId(Long minorId) {
         return walletRepository.findByMinorId(minorId)
                 .map(heroMapper::toWalletDTO) //
@@ -55,9 +57,57 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
-    public WalletResponseDTO findByMinorId(Long minorId) {
-        return walletRepository.findByMinorId(minorId)
-                .map(heroMapper::toWalletDTO) // O Service agora cuida da conversão
-                .orElseThrow(() -> new RuntimeException("Carteira não encontrada para o menor ID: " + minorId));
+    /**
+     * Atualiza o valor de cotação de cada ficha.
+     */
+    @Transactional
+    public void updateQuotation(Long minorId, Double newQuotation) {
+        Wallet wallet = walletRepository.findByMinorId(minorId)
+                .orElseThrow(() -> new RuntimeException("Wallet não encontrada"));
+        wallet.setTokenQuotation(newQuotation);
+        walletRepository.save(wallet);
     }
+
+    /**
+     * Converte todas as fichas atuais em dinheiro com base na cotação salva.
+     */
+    @Transactional
+    public void convertTokensToMoney(Long minorId) {
+        Wallet wallet = walletRepository.findByMinorId(minorId)
+                .orElseThrow(() -> new RuntimeException("Wallet não encontrada"));
+
+        int tokensParaConverter = wallet.getTokenBalances();
+        double cotacaoAtual = wallet.getTokenQuotation() != null ? wallet.getTokenQuotation() : 0.0;
+
+        if (tokensParaConverter <= 0) {
+            throw new RuntimeException("Não há fichas suficientes para conversão.");
+        }
+
+        double valorConvertido = tokensParaConverter * cotacaoAtual;
+
+        // 1. Zera as fichas e adiciona o dinheiro
+        wallet.setTokenBalances(0);
+        wallet.setMoneyBalances(wallet.getMoneyBalances() + valorConvertido);
+
+        // 2. Registrar histórico de Débito de Fichas
+        TokenTransaction tokenTx = new TokenTransaction();
+        tokenTx.setWallet(wallet);
+        tokenTx.setType(TransactionType.DEBIT);
+        tokenTx.setValue(tokensParaConverter);
+        tokenTx.setMotive("Conversão de fichas em dinheiro");
+        tokenTx.setDate(LocalDateTime.now());
+        wallet.getHistoricalTokens().add(tokenTx);
+
+        // 3. Registrar histórico de Crédito de Dinheiro
+        MoneyTransaction moneyTx = new MoneyTransaction();
+        moneyTx.setWallet(wallet);
+        moneyTx.setType(TransactionType.CREDIT);
+        moneyTx.setValue(valorConvertido);
+        moneyTx.setMotive("Recebido da conversão de " + tokensParaConverter + " fichas");
+        moneyTx.setDate(LocalDateTime.now());
+        wallet.getHistoricalMoney().add(moneyTx);
+
+        walletRepository.save(wallet);
+    }
+
 }

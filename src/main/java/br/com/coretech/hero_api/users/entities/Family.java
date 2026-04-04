@@ -5,7 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -23,5 +24,5 @@ public class Family {
     // Uma família tem vários usuários, e um usuário pode estar em várias famílias
     @ManyToMany(mappedBy = "families")
     @JsonIgnore
-    private List<User> members;
+    private Set<User> members = new HashSet<>();
 }

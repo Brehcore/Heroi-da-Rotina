@@ -25,15 +25,30 @@ public class HeroMapper {
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
 
-        // Verifica se a lista não é nula e se tem pelo menos 1 família dentro dela
-        if (user.getFamilies() != null && !user.getFamilies().isEmpty()) {
-            // Pega a primeira família da lista
-            Family primeiraFamilia = user.getFamilies().getFirst();
+        return dto;
+    }
 
-            dto.setFamilyId(primeiraFamilia.getId());
-            dto.setFamilyName(primeiraFamilia.getFamilyName());
+    public FamilyResponseDTO toFamilyDTO(Family family) {
+        if (family == null) return null;
+
+        FamilyResponseDTO dto = new FamilyResponseDTO();
+        dto.setId(family.getId());
+        dto.setFamilyName(family.getFamilyName());
+
+        if (family.getMembers() != null) {
+            dto.setMembers(family.getMembers().stream()
+                    .map(member -> {
+                        UserResponseDTO mDto = new UserResponseDTO();
+                        mDto.setId(member.getId());
+                        mDto.setName(member.getName());
+                        mDto.setEmail(member.getEmail());
+                        mDto.setRole(member.getRole());
+                        mDto.setFamilyId(family.getId());
+                        mDto.setFamilyName(family.getFamilyName());
+                        return mDto;
+                    })
+                    .toList());
         }
-
         return dto;
     }
 
@@ -44,6 +59,7 @@ public class HeroMapper {
         dto.setId(wallet.getId());
         dto.setTokensBalance(wallet.getTokenBalances());
         dto.setMoneyBalance(wallet.getMoneyBalances());
+        dto.setTokenQuotation(wallet.getTokenQuotation());
 
         if (wallet.getMinor() != null) {
             dto.setMinorId(wallet.getMinor().getId());
@@ -71,18 +87,6 @@ public class HeroMapper {
         dto.setMotive(tx.getMotive());
         dto.setDate(tx.getDate());
         dto.setFormattedValue("R$ " + String.format("%.2f", tx.getValue())); // Formata dinheiro
-        return dto;
-    }
-
-    public FamilyResponseDTO toFamilyDTO(Family family) {
-        if (family == null) return null;
-
-        FamilyResponseDTO dto = new FamilyResponseDTO();
-        dto.setId(family.getId());
-        dto.setFamilyName(family.getFamilyName());
-
-        dto.setMembers(null);
-
         return dto;
     }
 

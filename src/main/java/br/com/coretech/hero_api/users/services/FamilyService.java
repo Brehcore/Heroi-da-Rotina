@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class FamilyService {
         Family savedFamily = familyRepository.save(family);
 
         if (loggedUser.getFamilies() == null) {
-            loggedUser.setFamilies(new ArrayList<>());
+            loggedUser.setFamilies(new HashSet<>());
         }
 
         loggedUser.getFamilies().add(savedFamily);
@@ -52,12 +53,24 @@ public class FamilyService {
 
     @Transactional(readOnly = true)
     public List<UserResponseDTO> listMembers(Long familyId) {
+        // Busca a família primeiro para ter o nome dela
+        Family family = familyRepository.findById(familyId)
+                .orElseThrow(() -> new RuntimeException("Família não encontrada."));
+
+        // Busca os membros e injeta os dados da família no DTO
         return userRepository.findAllByFamiliesId(familyId)
                 .stream()
-                .map(heroMapper::toUserDTO)
+                .map(user -> {
+                    UserResponseDTO dto = heroMapper.toUserDTO(user);
+                    // Preenchemos os campos nulos manualmente aqui!
+                    dto.setFamilyId(family.getId());
+                    dto.setFamilyName(family.getFamilyName());
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<FamilyResponseDTO> getMyFamilies(String email) {
         User user = userRepository.findByEmailWithFamilies(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));

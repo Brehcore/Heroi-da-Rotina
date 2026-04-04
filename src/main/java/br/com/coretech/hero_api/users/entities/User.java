@@ -13,7 +13,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -50,7 +52,7 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "family_id")
     )
     @JsonIgnore
-    private List<Family> families;
+    private Set<Family> families = new HashSet<>();
 
     // A wallet do usuário (só será preenchida se role = ROLE_MENOR)
     @JsonIgnore

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,12 +29,13 @@ public class TaskController {
 
     /**
      * Cria uma nova tarefa no sistema.
-     *
+     * @apiNote Requer autenticação ROLE_MONITOR
      * @param dto Dados da tarefa a ser criada
      * @return ResponseEntity com a tarefa criada e status 201 (CREATED)
      */
     @Operation(summary = "Criar tarefa", description = "Cria uma nova tarefa no sistema.")
     @PostMapping
+    @PreAuthorize( "hasRole('ROLE_MONITOR')")
     public ResponseEntity<TaskResponseDTO> create(@RequestBody TaskCreateDTO dto) {
         TaskResponseDTO newTask = taskService.createTask(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
@@ -54,12 +56,13 @@ public class TaskController {
 
     /**
      * Permite que um monitor aprove e efetue o pagamento de uma tarefa através da interface Angular.
-     *
+     * @apiNote Requer autenticação ROLE_MONITOR
      * @param id ID da tarefa a ser aprovada
      * @return ResponseEntity com status 204 (NO CONTENT)
      */
     @Operation(summary = "Aprovar tarefa", description = "Permite que um monitor aprove e efetue o pagamento de uma tarefa")
     @PatchMapping("/{id}/approve")
+    @PreAuthorize( "hasRole('ROLE_MONITOR')")
     public ResponseEntity<Void> approveTask(@PathVariable Long id) {
         taskService.aproveTask(id);
         return ResponseEntity.noContent().build();
@@ -96,12 +99,13 @@ public class TaskController {
     /**
      * Lista todas as tarefas que necessitam de aprovação para uma família específica.
      * Endpoint utilizado no dashboard do monitor na interface Angular.
-     *
+     * @apiNote Requer autenticação ROLE_MONITOR
      * @param familyId ID da família
      * @return Lista de tarefas aguardando aprovação
      */
     @Operation(summary = "Listar tarefas para aprovação", description = "Lista todas as tarefas que necessitam de aprovação para uma família específica.")
     @GetMapping("/family/{familyId}/approve")
+    @PreAuthorize( "hasRole('ROLE_MONITOR')")
     public ResponseEntity<List<TaskResponseDTO>> listForApproval(@PathVariable Long familyId) {
         return ResponseEntity.ok(taskService.listForApproval(familyId));
     }

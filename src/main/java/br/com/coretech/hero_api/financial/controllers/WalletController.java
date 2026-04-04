@@ -30,7 +30,27 @@ public class WalletController {
     @Operation(summary = "Buscar saldo", description = "Busca o saldo e dados da carteira de um menor específico.")
     @GetMapping("/minor/{minorId}")
     public ResponseEntity<WalletResponseDTO> searchWallets(@PathVariable Long minorId) {
-        // O Controller apenas repassa a ordem e devolve a resposta
-        return ResponseEntity.ok(walletService.findByMinorId(minorId));
+        return ResponseEntity.ok(walletService.getWalletByMinorId(minorId));
+    }
+
+    @Operation(summary = "Adicionar fichas", description = "Monitor adiciona fichas à carteira do menor.")
+    @PostMapping("/minor/{minorId}/deposit-tokens")
+    public ResponseEntity<Void> depositTokens(@PathVariable Long minorId, @RequestParam Integer amount, @RequestParam String motive) {
+        walletService.TokenDeposit(minorId, amount, motive);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Atualizar cotação", description = "Define quanto vale cada ficha (Ex: 1 ficha = R$ 1.00)")
+    @PatchMapping("/minor/{minorId}/quotation")
+    public ResponseEntity<Void> updateQuotation(@PathVariable Long minorId, @RequestParam Double value) {
+        walletService.updateQuotation(minorId, value);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Converter fichas", description = "Transforma todas as fichas em saldo de dinheiro.")
+    @PostMapping("/minor/{minorId}/convert")
+    public ResponseEntity<Void> convertTokens(@PathVariable Long minorId) {
+        walletService.convertTokensToMoney(minorId);
+        return ResponseEntity.ok().build();
     }
 }

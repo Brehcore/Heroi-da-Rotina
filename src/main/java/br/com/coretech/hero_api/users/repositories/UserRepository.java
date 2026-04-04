@@ -24,7 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long>
      */
     List<User> findAllByFamiliesId(Long familiesId);
 
-    @EntityGraph(attributePaths = "families")
+    // Buscar 'families' E os 'members' de cada uma delas
+    @EntityGraph(attributePaths = {"families", "families.members"})
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmailWithFamilies(@Param("email") String email);
 }

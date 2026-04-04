@@ -40,4 +40,7 @@ public class Wallet {
     // O "extrato" do cofre
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MoneyTransaction> historicalMoney;
+
+    @Column(name = "token_quotation")
+    private Double tokenQuotation;
 }
