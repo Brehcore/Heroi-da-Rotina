@@ -3,7 +3,6 @@ package br.com.coretech.hero_api.financial.entities;
 import br.com.coretech.hero_api.users.entities.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,6 +40,9 @@ public class Wallet {
     @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MoneyTransaction> historicalMoney;
 
-    @Column(name = "token_quotation")
     private Double tokenQuotation;
+
+    private Double interestRate;
+
+    private Boolean interestEnabled;
 }

@@ -24,4 +24,10 @@ public class WalletResponseDTO {
 
     @Schema(description = "Exibe a cotação atual do token", example = "R$ 1,50")
     private Double tokenQuotation;
+
+    @Schema(description = "Taxa de juros mensal", example = "0.05")
+    private Double interestRate;
+
+    @Schema(description = "Ativa/Desativa taxa de juros automática")
+    private Boolean interestEnabled;
 }

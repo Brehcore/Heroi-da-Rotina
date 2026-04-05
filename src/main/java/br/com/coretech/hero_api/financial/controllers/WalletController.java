@@ -53,4 +53,15 @@ public class WalletController {
         walletService.convertTokensToMoney(minorId);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "Configurar Juros", description = "Ativa/Desativa rendimento e define a taxa.")
+    @PatchMapping("/minor/{minorId}/interest-config")
+    public ResponseEntity<Void> configInterest(
+            @PathVariable Long minorId,
+            @RequestParam Double rate,
+            @RequestParam Boolean enabled) {
+        walletService.updateInterestConfig(minorId, rate, enabled);
+        return ResponseEntity.ok().build();
+    }
+
 }
