@@ -1,5 +1,7 @@
 package br.com.coretech.hero_api.users.controllers;
 
+import br.com.coretech.hero_api.users.dtos.ForgotPasswordDTO;
+import br.com.coretech.hero_api.users.dtos.ResetPasswordDTO;
 import br.com.coretech.hero_api.users.dtos.UserCreateDTO;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
@@ -22,7 +24,6 @@ public class UserController {
     private final UserRepository userRepository;
     private final HeroMapper heroMapper;
 
-    // POST: Criar novo usuário (Monitor ou Menor)
     @Operation(summary = "Criar usuário", description = "Cria um novo usuário (monitor ou menor)")
     @PostMapping
     public ResponseEntity<UserResponseDTO> create(@RequestBody UserCreateDTO dto) {
@@ -30,7 +31,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUsers);
     }
 
-    // GET: Buscar por Email (Simulação de Login simples ou checagem)
     @Operation(summary = "Buscar e-mail", description = "Busca por e-mail (simulação de login simples ou checagem)")
     @GetMapping("/email/{email}")
     public ResponseEntity<UserResponseDTO> searchByEmail(@PathVariable String email) {
@@ -39,4 +39,19 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @Operation(summary = "Solicitar reset", description = "Solicita o reset para enviar um token no e-mail")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordDTO dto) {
+        userService.forgotPassword(dto.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Trocar senha", description = "Reseta a senha e exclui o token")
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(ResetPasswordDTO dto) {
+        userService.resetPasswordWithToken(dto);
+        return ResponseEntity.ok().build();
+    }
+
 }
