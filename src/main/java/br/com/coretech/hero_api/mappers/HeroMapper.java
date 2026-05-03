@@ -24,6 +24,7 @@ public class HeroMapper {
         dto.setName(user.getName());
         dto.setEmail(user.getEmail());
         dto.setRole(user.getRole());
+        dto.setProfilePictureUrl(user.getProfilePictureUrl());
 
         return dto;
     }
@@ -34,6 +35,7 @@ public class HeroMapper {
         FamilyResponseDTO dto = new FamilyResponseDTO();
         dto.setId(family.getId());
         dto.setFamilyName(family.getFamilyName());
+        dto.setProfilePictureUrl(family.getProfilePictureUrl());
 
         if (family.getMembers() != null) {
             dto.setMembers(family.getMembers().stream()
@@ -45,6 +47,7 @@ public class HeroMapper {
                         mDto.setRole(member.getRole());
                         mDto.setFamilyId(family.getId());
                         mDto.setFamilyName(family.getFamilyName());
+                        mDto.setProfilePictureUrl(member.getProfilePictureUrl());
                         return mDto;
                     })
                     .toList());

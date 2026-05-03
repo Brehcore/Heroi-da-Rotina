@@ -25,4 +25,7 @@ public class UserResponseDTO {
 
     @Schema(description = "Nome da família vinculada para facilitar exibição no front-end", example = "Vingadores")
     private String familyName;
+
+    @Schema(description = "URL da foto de perfil gerada dinamicamente", example = "https://api.dicebear.com/8.x/bottts/svg?seed=Nome")
+    private String profilePictureUrl;
 }

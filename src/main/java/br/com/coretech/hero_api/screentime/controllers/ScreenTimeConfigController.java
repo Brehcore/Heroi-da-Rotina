@@ -5,10 +5,11 @@ import br.com.coretech.hero_api.screentime.services.ScreenTimeConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "Configuração do tempo de tela", description = "Gerenciamento das regras e limites de tempo de tela") // Tag corrigida para o padrão da documentação
+@Tag(name = "Configuração do tempo de tela", description = "Gerenciamento das regras e limites de tempo de tela")
 @RestController
 @RequestMapping("/api/screentime/config")
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class ScreenTimeConfigController {
             description = "Define ou altera manualmente os limites de tempo de domingo a sábado e o valor de minutos por ficha."
     )
     @PutMapping("/minor/{minorId}")
+    @PreAuthorize( "hasRole('ADMIN')")
     public ResponseEntity<ScreenTimeConfigDTO> updateConfig(
             @PathVariable Long minorId,
             @RequestBody ScreenTimeConfigDTO dto) {

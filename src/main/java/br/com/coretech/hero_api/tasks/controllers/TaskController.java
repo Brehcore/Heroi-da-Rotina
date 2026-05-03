@@ -21,7 +21,6 @@ import java.util.List;
 @Tag(name = "Tarefas", description = "Responsável pelas operações relacionadas a tarefas")
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class TaskController {
 
@@ -29,13 +28,13 @@ public class TaskController {
 
     /**
      * Cria uma nova tarefa no sistema.
-     * @apiNote Requer autenticação ROLE_MONITOR
+     * @apiNote Requer autenticação MONITOR
      * @param dto Dados da tarefa a ser criada
      * @return ResponseEntity com a tarefa criada e status 201 (CREATED)
      */
     @Operation(summary = "Criar tarefa", description = "Cria uma nova tarefa no sistema.")
     @PostMapping
-    @PreAuthorize( "hasRole('ROLE_MONITOR')")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<TaskResponseDTO> create(@RequestBody TaskCreateDTO dto) {
         TaskResponseDTO newTask = taskService.createTask(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
@@ -56,13 +55,13 @@ public class TaskController {
 
     /**
      * Permite que um monitor aprove e efetue o pagamento de uma tarefa através da interface Angular.
-     * @apiNote Requer autenticação ROLE_MONITOR
+     * @apiNote Requer autenticação MONITOR
      * @param id ID da tarefa a ser aprovada
      * @return ResponseEntity com status 204 (NO CONTENT)
      */
     @Operation(summary = "Aprovar tarefa", description = "Permite que um monitor aprove e efetue o pagamento de uma tarefa")
     @PatchMapping("/{id}/approve")
-    @PreAuthorize( "hasRole('ROLE_MONITOR')")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> approveTask(@PathVariable Long id) {
         taskService.aproveTask(id);
         return ResponseEntity.noContent().build();
@@ -99,13 +98,13 @@ public class TaskController {
     /**
      * Lista todas as tarefas que necessitam de aprovação para uma família específica.
      * Endpoint utilizado no dashboard do monitor na interface Angular.
-     * @apiNote Requer autenticação ROLE_MONITOR
+     * @apiNote Requer autenticação MONITOR
      * @param familyId ID da família
      * @return Lista de tarefas aguardando aprovação
      */
     @Operation(summary = "Listar tarefas para aprovação", description = "Lista todas as tarefas que necessitam de aprovação para uma família específica.")
     @GetMapping("/family/{familyId}/approve")
-    @PreAuthorize( "hasRole('ROLE_MONITOR')")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<List<TaskResponseDTO>> listForApproval(@PathVariable Long familyId) {
         return ResponseEntity.ok(taskService.listForApproval(familyId));
     }

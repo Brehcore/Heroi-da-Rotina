@@ -25,4 +25,7 @@ public class Family {
     @ManyToMany(mappedBy = "families")
     @JsonIgnore
     private Set<User> members = new HashSet<>();
+
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
 }

@@ -9,4 +9,7 @@ public class FamilyCreateDTO {
 
     @Schema(description = "Nome do clã ou grupo familiar", example = "Família Pimentel")
     private String familyName;
+
+    @Schema(description = "URL da foto de perfil gerada dinamicamente", example = "https://api.dicebear.com/8.x/bottts/svg?seed=Nome")
+    private String profilePictureUrl;
 }

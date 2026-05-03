@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -35,6 +36,7 @@ public class WalletController {
 
     @Operation(summary = "Adicionar fichas", description = "Monitor adiciona fichas à carteira do menor.")
     @PostMapping("/minor/{minorId}/deposit-tokens")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> depositTokens(@PathVariable Long minorId, @RequestParam Integer amount, @RequestParam String motive) {
         walletService.TokenDeposit(minorId, amount, motive);
         return ResponseEntity.ok().build();
@@ -42,6 +44,7 @@ public class WalletController {
 
     @Operation(summary = "Atualizar cotação", description = "Define quanto vale cada ficha (Ex: 1 ficha = R$ 1.00)")
     @PatchMapping("/minor/{minorId}/quotation")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> updateQuotation(@PathVariable Long minorId, @RequestParam Double value) {
         walletService.updateQuotation(minorId, value);
         return ResponseEntity.ok().build();
@@ -49,6 +52,7 @@ public class WalletController {
 
     @Operation(summary = "Converter fichas", description = "Transforma todas as fichas em saldo de dinheiro.")
     @PostMapping("/minor/{minorId}/convert")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> convertTokens(@PathVariable Long minorId) {
         walletService.convertTokensToMoney(minorId);
         return ResponseEntity.ok().build();
@@ -56,6 +60,7 @@ public class WalletController {
 
     @Operation(summary = "Configurar Juros", description = "Ativa/Desativa rendimento e define a taxa.")
     @PatchMapping("/minor/{minorId}/interest-config")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> configInterest(
             @PathVariable Long minorId,
             @RequestParam Double rate,

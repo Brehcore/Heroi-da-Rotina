@@ -44,7 +44,7 @@ public class SecurityConfig {
                         // Regras públicas
                         .requestMatchers("/public/**", "/auth/login").permitAll()
                         //Endpoint público para registro
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
                         //Documentação
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                         // Qualquer outra requisição deve ser autenticada

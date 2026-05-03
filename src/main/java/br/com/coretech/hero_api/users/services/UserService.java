@@ -2,6 +2,7 @@ package br.com.coretech.hero_api.users.services;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.users.dtos.ResetPasswordDTO;
+import br.com.coretech.hero_api.users.dtos.UserRegisterDTO;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.entities.PasswordResetToken;
 import br.com.coretech.hero_api.users.enums.UserRole;
@@ -35,24 +36,36 @@ public class UserService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Transactional
+    public UserResponseDTO registerUser(UserRegisterDTO dto) {
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(UserRole.MONITOR);
+
+        user.setProfilePictureUrl(resolveProfilePictureUrl(dto.getProfilePictureUrl(), user.getName()));
+
+        user = userRepository.save(user);
+        return heroMapper.toUserDTO(user);
+    }
+
+    @Transactional
     public UserResponseDTO createUser(UserCreateDTO dto) {
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
-
-        // Criptografando a senha obrigatoriamente para o Spring Security funcionar depois
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(dto.getRole());
+
+        user.setProfilePictureUrl(resolveProfilePictureUrl(dto.getProfilePictureUrl(), user.getName()));
 
         // 1. Busca família APENAS se o ID foi enviado
         if (dto.getFamilyId() != null) {
             Family family = familyRepository.findById(dto.getFamilyId())
                     .orElseThrow(() -> new RuntimeException("Família não encontrada com ID: " + dto.getFamilyId()));
 
-            // Embrulhando a família em uma lista mutável
             user.setFamilies(new HashSet<>(List.of(family)));
         } else {
-            // Inicializando com lista vazia em vez de null (evita NullPointerException)
             user.setFamilies(new HashSet<>());
         }
 
@@ -62,7 +75,7 @@ public class UserService {
         // 3. Se for MENOR, cria a Wallet automaticamente
         if (dto.getRole() == UserRole.MINOR) {
             Wallet wallet = new Wallet();
-            wallet.setMinor(user); // Vínculo OneToOne
+            wallet.setMinor(user);
             wallet.setTokenBalances(0);
             wallet.setMoneyBalances(0.0);
             wallet.setHistoricalTokens(new ArrayList<>());
@@ -107,5 +120,31 @@ public class UserService {
         userRepository.save(user);
 
         passwordResetTokenRepository.delete(tokenEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getAuthenticatedUserDTO(String email) {
+        // Busca o usuário com a foto e as famílias carregadas
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        UserResponseDTO dto = heroMapper.toUserDTO(user);
+
+        // Se o usuário possuir famílias, vinculamos a primeira ao DTO para exibição
+        if (user.getFamilies() != null && !user.getFamilies().isEmpty()) {
+            Family primaryFamily = user.getFamilies().iterator().next();
+            dto.setFamilyId(primaryFamily.getId());
+            dto.setFamilyName(primaryFamily.getFamilyName());
+        }
+
+        return dto;
+    }
+
+    private String resolveProfilePictureUrl(String providedUrl, String userName) {
+        if (providedUrl != null && !providedUrl.isBlank()) {
+            return providedUrl;
+        }
+        String nomeLimpo = userName.replaceAll("\\s+", "");
+        return "https://api.dicebear.com/8.x/bottts/svg?seed=" + nomeLimpo;
     }
 }

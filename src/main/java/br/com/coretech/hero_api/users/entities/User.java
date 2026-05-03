@@ -59,9 +59,12 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL)
     private Wallet wallet;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override

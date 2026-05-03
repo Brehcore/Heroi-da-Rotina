@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Requisição do tempo de tela", description = "Gerenciamento do fluxo de solicitações e aprovações de tempo de tela")
@@ -32,6 +33,7 @@ public class ScreenTimeRequestController {
             description = "Permite que um monitor aprove um pedido pendente. Ao aprovar, as fichas são debitadas da carteira do menor."
     )
     @PatchMapping("/{requestId}/approve")
+    @PreAuthorize("hasRole('MONITOR')")
     public ResponseEntity<Void> approveRequest(
             @PathVariable Long requestId,
             @RequestParam Long monitorId) {

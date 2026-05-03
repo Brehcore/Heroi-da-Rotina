@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,7 @@ public class FamilyController {
 
     @Operation(summary = "Criar família", description = "Criação de uma nova família.")
     @PostMapping
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<FamilyResponseDTO> createFamily(@RequestBody FamilyCreateDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(familyService.createFamily(dto));
     }
@@ -41,6 +43,7 @@ public class FamilyController {
 
     @Operation(summary = "Listar minhas famílias", description = "Retorna todas as famílias às quais o monitor pertence.")
     @GetMapping("/me")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<List<FamilyResponseDTO>> getMyFamilies() {
         // Pega o e-mail do token JWT atual
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();

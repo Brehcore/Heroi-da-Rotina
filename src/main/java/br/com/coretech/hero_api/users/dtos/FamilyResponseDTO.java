@@ -16,4 +16,7 @@ public class FamilyResponseDTO {
 
     @Schema(description = "Lista de usuários que pertencem a esta família")
     private List<UserResponseDTO> members;
+
+    @Schema(description = "URL da foto de perfil gerada dinamicamente", example = "https://api.dicebear.com/8.x/bottts/svg?seed=Nome")
+    private String profilePictureUrl;
 }
