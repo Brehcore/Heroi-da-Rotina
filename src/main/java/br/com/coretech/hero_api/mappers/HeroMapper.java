@@ -102,6 +102,7 @@ public class HeroMapper {
         dto.setDescription(task.getDescription());
         dto.setRewardTask(task.getTokenReward());
         dto.setStatus(task.getStatus());
+        dto.setRejectionReason(task.getRejectionReason());
 
         // Evita NullPointerException caso o menor não venha preenchido
         if (task.getMinor() != null) {
@@ -111,6 +112,7 @@ public class HeroMapper {
 
         dto.setCreationDate(task.getCreationDate());
         dto.setCompletedDate(task.getCompletedDate());
+        dto.setApprovalDate(task.getApprovalDate());
 
         return dto;
     }

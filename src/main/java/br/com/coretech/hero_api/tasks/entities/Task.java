@@ -3,7 +3,6 @@ package br.com.coretech.hero_api.tasks.entities;
 import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.users.entities.User;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +31,10 @@ public class Task {
     @Column(nullable = false)
     private TaskStatus status = TaskStatus.PENDING;
 
+    // Motivo caso o monitor reprove a tarefa e peça para refazer
+    @Column(length = 500)
+    private String rejectionReason;
+
     // Quem deve fazer a tarefa
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "minor_id", nullable = false)
@@ -43,6 +46,6 @@ public class Task {
     private User monitorCreator;
 
     private LocalDateTime creationDate = LocalDateTime.now();
-    private LocalDateTime CompletedDate; // Data que o menor marcou como concluída
-    private LocalDateTime ApprovalDate; // Data que o monitor aprovou
+    private LocalDateTime completedDate;
+    private LocalDateTime approvalDate;
 }

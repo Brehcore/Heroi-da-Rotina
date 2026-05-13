@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,9 @@ public class TaskService {
         }
 
         task.setStatus(TaskStatus.COMPLETED);
+        // O servidor registra a hora exata que o botão foi clicado
+        task.setCompletedDate(LocalDateTime.now());
+
         taskRepository.save(task);
     }
 
@@ -84,6 +88,8 @@ public class TaskService {
         }
 
         task.setStatus(TaskStatus.APPROVED);
+
+        task.setApprovalDate(LocalDateTime.now());
         taskRepository.save(task);
 
         // Se houver recompensa em fichas, integra com o WalletService
@@ -96,18 +102,42 @@ public class TaskService {
         }
     }
 
+    /**
+     * Ação do MONITOR: Reprova a tarefa e devolve para o menor refazer.
+     */
+    @Transactional
+    public void rejectTask(Long tarefaId, String reason) {
+        Task task = taskRepository.findById(tarefaId)
+                .orElseThrow(() -> new RuntimeException("Task não encontrada com ID: " + tarefaId));
+
+        // Regra de negócio: só pode reprovar se o menor tiver marcado como CONCLUIDA
+        if (task.getStatus() != TaskStatus.COMPLETED) {
+            throw new RuntimeException("A task precisa estar CONCLUIDA para ser reprovada.");
+        }
+
+        // Volta a tarefa para o estado inicial para o menor refazer
+        task.setStatus(TaskStatus.PENDING);
+        task.setRejectionReason(reason);
+        task.setCompletedDate(null); // Reseta a data de conclusão, já que foi invalidada
+
+        taskRepository.save(task);
+    }
+
+    @Transactional(readOnly = true)
     public List<TaskResponseDTO> listForMinor(Long minorId) {
         return taskRepository.findAllByMinorId(minorId).stream()
                 .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponseDTO> listPendingForMinor(Long minorId) {
         return taskRepository.findAllByMinorIdAndStatus(minorId, TaskStatus.PENDING).stream()
                 .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponseDTO> listForApproval(Long familyId) {
         // Busca as tarefas que o menor já fez (CONCLUIDA) e o monitor precisa revisar
         return taskRepository.findAllByMinorFamiliesIdAndStatus(familyId, TaskStatus.COMPLETED).stream()

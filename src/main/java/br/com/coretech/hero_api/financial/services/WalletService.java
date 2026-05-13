@@ -7,8 +7,6 @@ import br.com.coretech.hero_api.financial.entities.TokenTransaction;
 import br.com.coretech.hero_api.financial.enums.TransactionType;
 import br.com.coretech.hero_api.financial.repositories.WalletRepository;
 import br.com.coretech.hero_api.mappers.HeroMapper;
-import br.com.coretech.hero_api.screentime.entities.ScreenTimeConfig;
-import br.com.coretech.hero_api.screentime.entities.ScreenTimeRequest;
 import br.com.coretech.hero_api.screentime.repositories.ScreenTimeConfigRepository;
 import br.com.coretech.hero_api.screentime.repositories.ScreenTimeRequestRepository;
 import lombok.RequiredArgsConstructor;
@@ -141,34 +139,6 @@ public class WalletService {
 
         wallet.getHistoricalTokens().add(transaction);
         walletRepository.save(wallet);
-    }
-
-    /**
-     * Cria uma solicitação de tempo de tela.
-     */
-    @Transactional
-    public ScreenTimeRequest requestScreenTime(Long minorId, Integer minutes) {
-        Wallet wallet = walletRepository.findByMinorId(minorId)
-                .orElseThrow(() -> new RuntimeException("Wallet não encontrada"));
-
-        // Busca a regra definida pelo monitor:
-        ScreenTimeConfig config = configRepository.findByWalletMinorId(minorId)
-                .orElseThrow(() -> new RuntimeException("Configuração de tempo de tela não definida pelo monitor."));
-
-        // Calcula o custo com base no valor dinâmico:
-        int cost = (int) Math.ceil((double) minutes / config.getMinutesPerToken());
-
-        if (wallet.getTokenBalances() < cost) {
-            throw new RuntimeException("Saldo insuficiente. Você precisa de " + cost + " fichas.");
-        }
-
-        ScreenTimeRequest request = new ScreenTimeRequest();
-        request.setMinor(wallet.getMinor());
-        request.setRequestedMinutes(minutes);
-        request.setTokenCost(cost);
-        // O status PENDING já vem por padrão na entidade
-
-        return screenTimeRequestRepository.save(request);
     }
 
     /**

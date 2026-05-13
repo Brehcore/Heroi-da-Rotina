@@ -1,0 +1,1 @@
+ALTER TABLE tb_tasks ADD COLUMN rejection_reason VARCHAR(500);

@@ -1,6 +1,7 @@
 package br.com.coretech.hero_api.tasks.controllers;
 
 import br.com.coretech.hero_api.tasks.dtos.TaskCreateDTO;
+import br.com.coretech.hero_api.tasks.dtos.TaskRejectDTO;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -48,6 +49,7 @@ public class TaskController {
      */
     @Operation(summary = "Marcar concluída", description = "Marca uma tarefa como concluída pelo menor")
     @PatchMapping("/{id}/conclude")
+    @PreAuthorize( "isAuthenticated()")
     public ResponseEntity<Void> completeTask(@PathVariable Long id) {
         taskService.completeTask(id);
         return ResponseEntity.noContent().build();
@@ -67,6 +69,22 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Permite que um monitor reprove uma tarefa, enviando um motivo.
+     * A tarefa voltará para o status PENDING para o menor refazer.
+     * @apiNote Requer autenticação MONITOR
+     * @param id ID da tarefa a ser reprovada
+     * @param dto Corpo contendo o motivo da reprovação
+     * @return ResponseEntity com status 204 (NO CONTENT)
+     */
+    @Operation(summary = "Reprovar tarefa", description = "Reprova uma tarefa concluída, enviando um motivo e permitindo que o menor a refaça.")
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize( "hasRole('MONITOR')")
+    public ResponseEntity<Void> rejectTask(@PathVariable Long id, @RequestBody TaskRejectDTO dto) {
+        taskService.rejectTask(id, dto.getReason());
+        return ResponseEntity.noContent().build();
+    }
+
     // --- Consultas (Android - Menor) ---
 
     /**
@@ -78,6 +96,7 @@ public class TaskController {
      */
     @Operation(summary = "Listar todas as tarefas", description = "Lista todas as tarefas de um menor específico.")
     @GetMapping("/minor/{minorId}")
+    @PreAuthorize( "isAuthenticated()")
     public ResponseEntity<List<TaskResponseDTO>> listAllTasksForMinor(@PathVariable Long minorId) {
         return ResponseEntity.ok(taskService.listForMinor(minorId));
     }
@@ -91,6 +110,7 @@ public class TaskController {
      */
     @Operation(summary = "Listar tarefas pendentes", description = "Lista apenas as tarefas pendentes de um menor específico.")
     @GetMapping("/minor/{minorId}/pending")
+    @PreAuthorize( "isAuthenticated()")
     public ResponseEntity<List<TaskResponseDTO>> listAllPendingTasks(@PathVariable Long minorId) {
         return ResponseEntity.ok(taskService.listPendingForMinor(minorId));
     }
@@ -105,7 +125,7 @@ public class TaskController {
     @Operation(summary = "Listar tarefas para aprovação", description = "Lista todas as tarefas que necessitam de aprovação para uma família específica.")
     @GetMapping("/family/{familyId}/approve")
     @PreAuthorize( "hasRole('MONITOR')")
-    public ResponseEntity<List<TaskResponseDTO>> listForApproval(@PathVariable Long familyId) {
+    public ResponseEntity<List<TaskResponseDTO>>listForApproval(@PathVariable Long familyId) {
         return ResponseEntity.ok(taskService.listForApproval(familyId));
     }
 }

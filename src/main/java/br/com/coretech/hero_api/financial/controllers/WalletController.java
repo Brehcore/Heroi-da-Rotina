@@ -30,6 +30,7 @@ public class WalletController {
      */
     @Operation(summary = "Buscar saldo", description = "Busca o saldo e dados da carteira de um menor específico.")
     @GetMapping("/minor/{minorId}")
+    @PreAuthorize( "isAuthenticated()")
     public ResponseEntity<WalletResponseDTO> searchWallets(@PathVariable Long minorId) {
         return ResponseEntity.ok(walletService.getWalletByMinorId(minorId));
     }

@@ -33,6 +33,12 @@ public class TaskResponseDTO {
     @Schema(description = "Data e hora de criação do registro", example = "2026-04-03T20:51:00")
     private LocalDateTime creationDate;
 
-    @Schema(description = "Data e hora em que a tarefa foi marcada como concluída", example = "null")
+    @Schema(description = "Data e hora em que a tarefa foi marcada como concluída", example = "2026-04-03T20:51:00")
     private LocalDateTime completedDate;
+
+    @Schema(description = "Data e hora em que a tarefa foi marcada como aprovada", example = "2026-04-03T20:51:00")
+    private LocalDateTime approvalDate;
+
+    @Schema(description = "Motivo da reprovação, caso a tarefa tenha sido rejeitada pelo monitor", example = "Faltou varrer embaixo da cama.")
+    private String rejectionReason;
 }
