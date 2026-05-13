@@ -1,0 +1,1 @@
+ALTER TABLE tb_wallet ADD COLUMN interest_frequency VARCHAR(20);

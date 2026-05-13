@@ -1,5 +1,6 @@
 package br.com.coretech.hero_api.financial.entities;
 
+import br.com.coretech.hero_api.financial.enums.InterestFrequency;
 import br.com.coretech.hero_api.users.entities.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -45,4 +46,8 @@ public class Wallet {
     private Double interestRate;
 
     private Boolean interestEnabled;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "interest_frequency")
+    private InterestFrequency interestFrequency;
 }

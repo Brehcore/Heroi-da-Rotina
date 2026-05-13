@@ -22,6 +22,7 @@ public class ScreenTimeConfigController {
             description = "Recupera os limites diários e a cotação de minutos por ficha de um menor específico."
     )
     @GetMapping("/minor/{minorId}")
+    @PreAuthorize( "isAuthenticated()")
     public ResponseEntity<ScreenTimeConfigDTO> getConfig(@PathVariable Long minorId) {
         return ResponseEntity.ok(configService.getConfig(minorId));
     }
@@ -31,7 +32,7 @@ public class ScreenTimeConfigController {
             description = "Define ou altera manualmente os limites de tempo de domingo a sábado e o valor de minutos por ficha."
     )
     @PutMapping("/minor/{minorId}")
-    @PreAuthorize( "hasRole('ADMIN')")
+    @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<ScreenTimeConfigDTO> updateConfig(
             @PathVariable Long minorId,
             @RequestBody ScreenTimeConfigDTO dto) {

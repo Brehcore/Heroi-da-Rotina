@@ -1,5 +1,6 @@
 package br.com.coretech.hero_api.financial.dtos;
 
+import br.com.coretech.hero_api.financial.enums.InterestFrequency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -30,4 +31,7 @@ public class WalletResponseDTO {
 
     @Schema(description = "Ativa/Desativa taxa de juros automática")
     private Boolean interestEnabled;
+
+    @Schema(description = "Frequência do rendimento (DAILY, WEEKLY, MONTHLY)", example = "WEEKLY")
+    private InterestFrequency interestFrequency;
 }

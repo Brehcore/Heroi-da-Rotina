@@ -2,6 +2,8 @@ package br.com.coretech.hero_api.mappers;
 
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
+import br.com.coretech.hero_api.screentime.dtos.ScreenTimeResponseDTO;
+import br.com.coretech.hero_api.screentime.entities.ScreenTimeRequest;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
 import br.com.coretech.hero_api.users.dtos.FamilyResponseDTO;
@@ -63,6 +65,9 @@ public class HeroMapper {
         dto.setTokensBalance(wallet.getTokenBalances());
         dto.setMoneyBalance(wallet.getMoneyBalances());
         dto.setTokenQuotation(wallet.getTokenQuotation());
+        dto.setInterestRate(wallet.getInterestRate());
+        dto.setInterestEnabled(wallet.getInterestEnabled());
+        dto.setInterestFrequency(wallet.getInterestFrequency());
 
         if (wallet.getMinor() != null) {
             dto.setMinorId(wallet.getMinor().getId());
@@ -71,26 +76,17 @@ public class HeroMapper {
         return dto;
     }
 
-    // Mapper genérico para histórico (Fichas)
-    public TransactionDTO toTransactionDTO(TokenTransaction tx) {
-        TransactionDTO dto = new TransactionDTO();
-        dto.setId(tx.getId());
-        dto.setType(tx.getType());
-        dto.setMotive(tx.getMotive());
-        dto.setDate(tx.getDate());
-        dto.setFormattedValue(tx.getValue() + " Fichas"); // Formata para leitura humana
-        return dto;
-    }
+    public ScreenTimeResponseDTO toScreenTimeResponseDTO(ScreenTimeRequest request) {
+        if (request == null) return null;
 
-    // Mapper genérico para histórico (Dinheiro)
-    public TransactionDTO toTransactionDTO(MoneyTransaction tx) {
-        TransactionDTO dto = new TransactionDTO();
-        dto.setId(tx.getId());
-        dto.setType(tx.getType());
-        dto.setMotive(tx.getMotive());
-        dto.setDate(tx.getDate());
-        dto.setFormattedValue("R$ " + String.format("%.2f", tx.getValue())); // Formata dinheiro
-        return dto;
+        return new ScreenTimeResponseDTO(
+                request.getId(),
+                request.getMinor().getId(),
+                request.getMinor().getName(),
+                request.getScreenStatus() != null ? request.getScreenStatus().name() : "PENDENTE",
+                request.getRequestedMinutes(),
+                0
+        );
     }
 
     public TaskResponseDTO toTaskDTO(Task task) {

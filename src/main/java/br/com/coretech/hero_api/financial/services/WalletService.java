@@ -4,11 +4,10 @@ import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.financial.entities.TokenTransaction;
+import br.com.coretech.hero_api.financial.enums.InterestFrequency;
 import br.com.coretech.hero_api.financial.enums.TransactionType;
 import br.com.coretech.hero_api.financial.repositories.WalletRepository;
 import br.com.coretech.hero_api.mappers.HeroMapper;
-import br.com.coretech.hero_api.screentime.repositories.ScreenTimeConfigRepository;
-import br.com.coretech.hero_api.screentime.repositories.ScreenTimeRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,8 +22,6 @@ public class WalletService {
 
     private final WalletRepository walletRepository;
     private final HeroMapper heroMapper;
-    private final ScreenTimeRequestRepository screenTimeRequestRepository;
-    private final ScreenTimeConfigRepository configRepository;
 
     /**
      * Busca os detalhes da carteira de um menor e converte para DTO.
@@ -142,30 +139,60 @@ public class WalletService {
     }
 
     /**
-     * Liga/Desliga os juros e define a taxa (ex: 1.5 para 1.5%)
+     * Liga/Desliga os juros, define a taxa e a frequência (Diário, Semanal, Mensal)
      */
     @Transactional
-    public void updateInterestConfig(Long minorId, Double rate, Boolean enabled) {
+    public void updateInterestConfig(Long minorId, Double rate, Boolean enabled, InterestFrequency frequency) {
         Wallet wallet = walletRepository.findByMinorId(minorId)
                 .orElseThrow(() -> new RuntimeException("Carteira não encontrada"));
 
         wallet.setInterestRate(rate);
         wallet.setInterestEnabled(enabled);
+        wallet.setInterestFrequency(frequency); // <-- Salvando a nova escolha
         walletRepository.save(wallet);
     }
 
+    // ========================================================================
+    // ROTINAS DE RENDIMENTO AUTOMÁTICO (CRON JOBS)
+    // ========================================================================
 
     /**
-     * Roda automaticamente toda segunda-feira à meia-noite (00:00).
-     * Lê todas as carteiras com juros ativados e aplica o rendimento.
+     * Roda TODOS OS DIAS à meia-noite (00:00).
+     */
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void applyDailyInterest() {
+        List<Wallet> walletsToProcess = walletRepository.findAllByInterestEnabledTrueAndInterestFrequency(InterestFrequency.DAILY);
+        processInterestForWallets(walletsToProcess, "Diário");
+    }
+
+    /**
+     * Roda toda SEGUNDA-FEIRA à meia-noite (00:00).
      */
     @Scheduled(cron = "0 0 0 * * MON")
     @Transactional
-    public void applyAutomaticInterestGlobal() {
-        // Busca apenas quem ativou o switch
-        List<Wallet> walletsToProcess = walletRepository.findAllByInterestEnabledTrue();
+    public void applyWeeklyInterest() {
+        List<Wallet> walletsToProcess = walletRepository.findAllByInterestEnabledTrueAndInterestFrequency(InterestFrequency.WEEKLY);
+        processInterestForWallets(walletsToProcess, "Semanal");
+    }
 
-        for (Wallet wallet : walletsToProcess) {
+    /**
+     * Roda todos os DIA 1º DO MÊS à meia-noite (00:00).
+     */
+    @Scheduled(cron = "0 0 0 1 * *")
+    @Transactional
+    public void applyMonthlyInterest() {
+        List<Wallet> walletsToProcess = walletRepository.findAllByInterestEnabledTrueAndInterestFrequency(InterestFrequency.MONTHLY);
+        processInterestForWallets(walletsToProcess, "Mensal");
+    }
+
+    /**
+     * Metodo auxiliar privado para não repetir a lógica matemática e de histórico.
+     */
+    private void processInterestForWallets(List<Wallet> wallets, String frequencyLabel) {
+        if (wallets.isEmpty()) return;
+
+        for (Wallet wallet : wallets) {
             double balance = wallet.getMoneyBalances();
             double rate = wallet.getInterestRate() != null ? wallet.getInterestRate() : 0.0;
             double interestValue = balance * (rate / 100);
@@ -177,16 +204,15 @@ public class WalletService {
                 tx.setWallet(wallet);
                 tx.setType(TransactionType.CREDIT);
                 tx.setValue(interestValue);
-                tx.setMotive("Rendimento automático aplicado: " + rate + "%");
+                tx.setMotive(String.format("Rendimento %s aplicado: %.2f%%", frequencyLabel, rate));
                 tx.setDate(LocalDateTime.now());
 
                 wallet.getHistoricalMoney().add(tx);
             }
         }
 
-        // Salva todas as carteiras atualizadas no banco de uma vez
-        walletRepository.saveAll(walletsToProcess);
-        System.out.println("Rendimento automático aplicado para " + walletsToProcess.size() + " carteiras.");
+        walletRepository.saveAll(wallets);
+        System.out.println("Rendimento " + frequencyLabel + " aplicado para " + wallets.size() + " carteiras.");
     }
 
 }

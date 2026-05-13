@@ -1,5 +1,6 @@
 package br.com.coretech.hero_api.financial.controllers;
 
+import br.com.coretech.hero_api.financial.dtos.InterestConfigDTO;
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.services.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,16 +24,15 @@ public class WalletController {
     private final WalletService walletService;
 
     /**
-     * Busca o saldo e dados da carteira de um menor específico.
-     *
-     * @param minorId ID do menor para buscar a carteira
-     * @return ResponseEntity contendo os dados da carteira se encontrada, ou status 404 se não existir
+     * Busca os dados completos da carteira de um menor (Saldos, Cotação e Config. de Juros)
+     * @apiNote Pode ser acessado pelo MENOR (para ver seus dados) ou pelo MONITOR.
      */
-    @Operation(summary = "Buscar saldo", description = "Busca o saldo e dados da carteira de um menor específico.")
+    @Operation(summary = "Buscar Carteira", description = "Retorna os saldos, a cotação atual da ficha e as configurações de rendimento.")
     @GetMapping("/minor/{minorId}")
-    @PreAuthorize( "isAuthenticated()")
-    public ResponseEntity<WalletResponseDTO> searchWallets(@PathVariable Long minorId) {
-        return ResponseEntity.ok(walletService.getWalletByMinorId(minorId));
+    @PreAuthorize("isAuthenticated()") // Permite que tanto o Monitor quanto o Menor logado possam ver
+    public ResponseEntity<WalletResponseDTO> getWallet(@PathVariable Long minorId) {
+        WalletResponseDTO walletDto = walletService.getWalletByMinorId(minorId);
+        return ResponseEntity.ok(walletDto);
     }
 
     @Operation(summary = "Adicionar fichas", description = "Monitor adiciona fichas à carteira do menor.")
@@ -59,14 +59,14 @@ public class WalletController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Configurar Juros", description = "Ativa/Desativa rendimento e define a taxa.")
+    @Operation(summary = "Configurar Juros", description = "Ativa/Desativa rendimento e define a taxa e frequência.")
     @PatchMapping("/minor/{minorId}/interest-config")
     @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> configInterest(
             @PathVariable Long minorId,
-            @RequestParam Double rate,
-            @RequestParam Boolean enabled) {
-        walletService.updateInterestConfig(minorId, rate, enabled);
+            @RequestBody InterestConfigDTO dto) {
+
+        walletService.updateInterestConfig(minorId, dto.getRate(), dto.getEnabled(), dto.getFrequency());
         return ResponseEntity.ok().build();
     }
 
