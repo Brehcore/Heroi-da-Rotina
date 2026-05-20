@@ -34,4 +34,5 @@ build/
 
 application-local.properties
 .env
+.env.*
 docker-compose.yml
