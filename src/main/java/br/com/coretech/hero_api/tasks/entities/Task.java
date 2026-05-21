@@ -24,7 +24,7 @@ public class Task {
     private String description; // Ex: "30 minutos por dia" [cite: 23]
 
     // Quantas fichas esta tarefa paga como bônus [cite: 51, 52]
-    @Column(nullable = false)
+    @Column(name = "token_raward", nullable = false)
     private Integer tokenReward = 0;
 
     @Enumerated(EnumType.STRING)
