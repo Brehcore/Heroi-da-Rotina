@@ -2,6 +2,7 @@ package br.com.coretech.hero_api.screentime.controllers;
 
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeRequestDTO;
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeResponseDTO;
+import br.com.coretech.hero_api.screentime.dtos.TokenExchangeRequestDTO;
 import br.com.coretech.hero_api.screentime.services.ScreenTimeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,15 +22,27 @@ public class ScreenTimeRequestController {
 
     private final ScreenTimeService screenTimeService;
 
+//    @Operation(
+//            summary = "Solicitar tempo de tela (Menor)",
+//            description = "Permite que o menor solicite minutos de tela. O sistema valida automaticamente o limite do dia e o saldo de fichas."
+//    )
+//    @PostMapping("/time")
+//    @PreAuthorize("isAuthenticated()")
+//    public ResponseEntity<ScreenTimeResponseDTO> requestScreenTime(
+//            @RequestBody @Valid ScreenTimeRequestDTO requestDTO) {
+//        ScreenTimeResponseDTO response = screenTimeService.requestScreenTime(requestDTO);
+//        return ResponseEntity.ok(response);
+//    }
+
     @Operation(
-            summary = "Solicitar tempo de tela (Menor)",
-            description = "Permite que o menor solicite minutos de tela. O sistema valida automaticamente o limite do dia e o saldo de fichas."
+            summary = "Trocar fichas por tempo de tela",
+            description = "Permite que o menor solicite a troca de fichas por minutos de tela. O sistema calcula o tempo automaticamente, e valida o limite do dia e o saldo de fichas."
     )
-    @PostMapping("/time")
+    @PostMapping("/exchange-tokens")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ScreenTimeResponseDTO> requestScreenTime(
-            @RequestBody @Valid ScreenTimeRequestDTO requestDTO) {
-        ScreenTimeResponseDTO response = screenTimeService.requestScreenTime(requestDTO);
+    public ResponseEntity<ScreenTimeResponseDTO> exchangeTokensForTime(
+            @RequestBody @Valid TokenExchangeRequestDTO requestDTO) {
+        ScreenTimeResponseDTO response = screenTimeService.exchangeTokensForTime(requestDTO);
         return ResponseEntity.ok(response);
     }
 

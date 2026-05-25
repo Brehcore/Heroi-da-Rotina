@@ -8,8 +8,12 @@ import br.com.coretech.hero_api.tasks.entities.Task;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
+import br.com.coretech.hero_api.users.enums.UserRole;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
+import br.com.coretech.hero_api.utils.service.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +29,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final WalletService walletService;
     private final HeroMapper heroMapper;
+    private final EmailNotificationService emailService;
 
     /**
      * Cria uma nova tarefa atribuída a um menor.
@@ -49,6 +54,34 @@ public class TaskService {
         task.setStatus(TaskStatus.PENDING);
 
         task = taskRepository.save(task);
+
+        // DISPARO DO E-MAIL DE NOVA MISSÃO
+        if (menor.getEmail() != null && !menor.getEmail().isEmpty()) {
+            String assunto = "🚀 Nova Missão: " + task.getTitle();
+
+            String corpoHtml = String.format("""
+                <div style="font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <div style="background-color: #8E44AD; padding: 20px; text-align: center; color: white;">
+                            <h2 style="margin: 0;">🚀 Nova Missão Disponível!</h2>
+                        </div>
+                        <div style="padding: 30px; color: #333333; line-height: 1.6;">
+                            <p style="font-size: 18px;">Preparado, <strong>%s</strong>?</p>
+                            <p>O seu monitor acabou de enviar um novo desafio para você. Cumpra a missão para ganhar recompensas!</p>
+                            <div style="background-color: #f4ebf9; border-left: 4px solid #8E44AD; border-radius: 4px; padding: 20px; margin: 25px 0;">
+                                <h3 style="margin: 0 0 10px 0; color: #5b2c6f; font-size: 20px;">%s</h3>
+                                <p style="margin: 0; font-size: 16px; font-weight: bold; color: #333;">
+                                    Recompensa: <span style="color: #8E44AD;">🪙 %d Fichas</span>
+                                </p>
+                            </div>
+                            <p style="text-align: center; color: #777; font-size: 14px;">Abra o aplicativo "Herói da Rotina", marque como concluída quando terminar e aguarde a aprovação!</p>
+                        </div>
+                    </div>
+                </div>
+                """, task.getMinor().getName(), task.getTitle(), task.getTokenReward());
+
+            emailService.sendEmail(menor.getEmail(), assunto, corpoHtml);
+        }
 
         return heroMapper.toTaskDTO(task);
     }
@@ -88,17 +121,44 @@ public class TaskService {
         }
 
         task.setStatus(TaskStatus.APPROVED);
-
         task.setApprovalDate(LocalDateTime.now());
         taskRepository.save(task);
 
-        // Se houver recompensa em fichas, integra com o WalletService
+        // Se houver recompensa em fichas, integra com o WalletService e Notifica
         if (task.getTokenReward() != null && task.getTokenReward() > 0) {
+
+            // 1. Faz o depósito real no cofre
             walletService.TokenDeposit(
                     task.getMinor().getId(),
                     task.getTokenReward(),
                     "Recompensa pela task: " + task.getTitle()
             );
+
+            // 2. Dispara o e-mail de comemoração
+            User menor = task.getMinor();
+            if (UserRole.MINOR.equals(menor.getRole())) {
+                String assunto = "🎉 Fichas na Conta! Parabéns pelo seu esforço!";
+                String corpoHtml = String.format("""
+                    <div style="font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px;">
+                        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                            <div style="background-color: #27AE60; padding: 20px; text-align: center; color: white;">
+                                <h2 style="margin: 0;">🎉 Tarefa Aprovada!</h2>
+                            </div>
+                            <div style="padding: 30px; color: #333333; line-height: 1.6;">
+                                <p style="font-size: 18px;">Oi, <strong>%s</strong>!</p>
+                                <p>Excelente trabalho! A sua tarefa <strong>"%s"</strong> foi avaliada e aprovada.</p>
+                                <div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #eafaf1; border-radius: 8px;">
+                                    <span style="font-size: 40px; font-weight: bold; color: #27AE60;">🪙 +%d</span>
+                                    <p style="color: #229954; margin-top: 10px; font-weight: bold;">Fichas depositadas no seu cofre!</p>
+                                </div>
+                                <p style="text-align: center;">Continue assim para conquistar ainda mais recompensas!</p>
+                            </div>
+                        </div>
+                    </div>
+                    """, menor.getName(), task.getTitle(), task.getTokenReward());
+
+                emailService.sendEmail(menor.getEmail(), assunto, corpoHtml);
+            }
         }
     }
 
@@ -143,5 +203,11 @@ public class TaskService {
         return taskRepository.findAllByMinorFamiliesIdAndStatus(familyId, TaskStatus.COMPLETED).stream()
                 .map(heroMapper::toTaskDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TaskResponseDTO> listAllTasks(Long familyId, Pageable pageable) {
+        Page<Task> taskPage = taskRepository.findByMinor_Families_Id(familyId, pageable);
+        return taskPage.map(heroMapper::toTaskDTO);
     }
 }

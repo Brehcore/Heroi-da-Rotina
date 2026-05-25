@@ -7,6 +7,9 @@ import br.com.coretech.hero_api.tasks.services.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -127,5 +130,20 @@ public class TaskController {
     @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<List<TaskResponseDTO>>listForApproval(@PathVariable Long familyId) {
         return ResponseEntity.ok(taskService.listForApproval(familyId));
+    }
+
+    @Operation(summary = "Listar todas as tarefas", description = "Lista todas as tarefas paginadas para uma família específica.")
+    @GetMapping("/family/{familyId}")
+    @PreAuthorize("hasRole('MONITOR')")
+    public ResponseEntity<Page<TaskResponseDTO>> listAllTasks(
+            @PathVariable Long familyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // 1. Converte os parâmetros da URL em um objeto Pageable oficial do Spring
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 2. Passa o familyId e o pageable para o Service
+        return ResponseEntity.ok(taskService.listAllTasks(familyId, pageable));
     }
 }

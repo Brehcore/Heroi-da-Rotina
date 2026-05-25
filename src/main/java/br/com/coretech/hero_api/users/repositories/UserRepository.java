@@ -28,4 +28,7 @@ public interface UserRepository extends JpaRepository<User, Long>
     @EntityGraph(attributePaths = {"families", "families.members"})
     @Query("SELECT u FROM User u WHERE u.email = :email")
     Optional<User> findByEmailWithFamilies(@Param("email") String email);
+
+    // Busca todos os usuários de uma família específica que possuem um determinado papel (Role)
+    List<User> findByFamilies_IdAndRole(Long familyId, UserRole role);
 }
