@@ -1,16 +1,21 @@
 package br.com.coretech.hero_api.financial.services;
 
+import br.com.coretech.hero_api.exceptions.InsufficientBalanceException;
+import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
 import br.com.coretech.hero_api.financial.entities.Wallet;
 import br.com.coretech.hero_api.financial.entities.TokenTransaction;
 import br.com.coretech.hero_api.financial.enums.InterestFrequency;
 import br.com.coretech.hero_api.financial.enums.TransactionType;
+import br.com.coretech.hero_api.financial.repositories.TokenTransactionRepository;
 import br.com.coretech.hero_api.financial.repositories.WalletRepository;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.utils.service.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +28,7 @@ import java.util.List;
 public class WalletService {
 
     private final WalletRepository walletRepository;
+    private final TokenTransactionRepository  tokenTransactionRepository;
     private final HeroMapper heroMapper;
     private final EmailNotificationService emailService;
 
@@ -37,11 +43,17 @@ public class WalletService {
                 .orElseThrow(() -> new RuntimeException("Carteira não encontrada para o menor ID: " + minorId));
     }
 
+    @Transactional(readOnly = true)
+    public Page<TransactionDTO> getMinorTransactionalHistory(Long minorId, Pageable pageable) {
+        Page<TokenTransaction> transactions = tokenTransactionRepository.findByWalletMinorId(minorId, pageable);
+        return transactions.map(heroMapper::toTokenTransactionDTO);
+    }
+
     /**
      * Adiciona fichas à carteira do menor e registra o histórico.
      */
     @Transactional
-    public void TokenDeposit(Long minorId, Integer amount, String motive) {
+    public void tokenDeposit(Long minorId, Integer amount, String motive) {
         Wallet wallet = walletRepository.findByMinorId(minorId)
                 .orElseThrow(() -> new RuntimeException("Wallet não encontrada para o menor ID: " + minorId));
 
@@ -86,6 +98,32 @@ public class WalletService {
 
             emailService.sendEmail(menor.getEmail(), assunto, corpoHtml);
         }
+    }
+
+    @Transactional
+    public void tokenDeduct (Long minorId, Integer amount, String motive) {
+        Wallet wallet = walletRepository.findByMinorId(minorId)
+                .orElseThrow(() -> new RuntimeException("Wallet não encontrada para o menor ID: " + minorId));
+        if (wallet.getTokenBalances() < amount) {
+            throw new InsufficientBalanceException("Fichas insuficientes para essa dedução");
+        }
+
+        // 1. Atualiza saldo
+        wallet.setTokenBalances(wallet.getTokenBalances() - amount);
+
+        // 2. Cria registro de transação
+        TokenTransaction transaction = new TokenTransaction();
+        transaction.setWallet(wallet);
+        transaction.setType(TransactionType.DEBIT);
+        transaction.setValue(amount);
+        transaction.setMotive(motive);
+        transaction.setDate(LocalDateTime.now());
+
+        // 3. Adiciona à lista
+        wallet.getHistoricalTokens().add(transaction);
+
+        // 4. Salva tudo
+        walletRepository.save(wallet);
     }
 
     /**

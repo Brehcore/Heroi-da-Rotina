@@ -42,6 +42,14 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUsers);
     }
 
+    @Operation(summary = "Remove um usuário", description = "Remove um usuário da família")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MONITOR')")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Buscar e-mail", description = "Busca por e-mail (simulação de login simples ou checagem)")
     @GetMapping("/email/{email}")
     public ResponseEntity<UserResponseDTO> searchByEmail(@PathVariable String email) {

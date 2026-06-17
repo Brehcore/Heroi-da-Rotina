@@ -112,4 +112,42 @@ public class HeroMapper {
 
         return dto;
     }
+
+    // 1. Mapeador para Transações de FICHAS (Tokens)
+    public TransactionDTO toTokenTransactionDTO(TokenTransaction transaction) {
+        if (transaction == null) return null;
+
+        TransactionDTO dto = new TransactionDTO();
+        dto.setId(transaction.getId());
+        dto.setType(transaction.getType());
+        dto.setMotive(transaction.getMotive());
+        dto.setDate(transaction.getDate());
+
+        // Monta o valor formatado amigável para o Front-end
+        // Ex: "5 Fichas" ou "1 Ficha"
+        String label = (transaction.getValue() != null && transaction.getValue() == 1) ? "Ficha" : "Fichas";
+        dto.setFormattedValue(transaction.getValue() + " " + label);
+
+        return dto;
+    }
+
+    // 2. Mapeador para Transações de DINHEIRO (Money) - (Opcional)
+    public TransactionDTO toMoneyTransactionDTO(MoneyTransaction transaction) {
+        if (transaction == null) return null;
+
+        TransactionDTO dto = new TransactionDTO();
+        dto.setId(transaction.getId());
+        dto.setType(transaction.getType());
+        dto.setMotive(transaction.getMotive());
+        dto.setDate(transaction.getDate());
+
+        // Monta o valor formatado. Ex: "R$ 15.50"
+        if (transaction.getValue() != null) {
+            dto.setFormattedValue(String.format("R$ %.2f", transaction.getValue()).replace(".", ","));
+        } else {
+            dto.setFormattedValue("R$ 0,00");
+        }
+
+        return dto;
+    }
 }

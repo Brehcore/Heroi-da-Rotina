@@ -1,11 +1,17 @@
 package br.com.coretech.hero_api.financial.controllers;
 
+import br.com.coretech.hero_api.financial.dtos.DeductTokensRequestDTO;
 import br.com.coretech.hero_api.financial.dtos.InterestConfigDTO;
+import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
 import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
 import br.com.coretech.hero_api.financial.services.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +41,28 @@ public class WalletController {
         return ResponseEntity.ok(walletDto);
     }
 
+    @Operation(summary = "Buscar Histórico", description = "Retorna o histórico financeiro do menor")
+    @GetMapping("/minor/{minorId}/transactions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<TransactionDTO>> getMinorTransactionalHistory(@PathVariable Long minorId, Pageable pageable) {
+            Page<TransactionDTO> transactions = walletService.getMinorTransactionalHistory(minorId, pageable);
+            return ResponseEntity.ok(transactions);
+    }
+
     @Operation(summary = "Adicionar fichas", description = "Monitor adiciona fichas à carteira do menor.")
     @PostMapping("/minor/{minorId}/deposit-tokens")
     @PreAuthorize( "hasRole('MONITOR')")
     public ResponseEntity<Void> depositTokens(@PathVariable Long minorId, @RequestParam Integer amount, @RequestParam String motive) {
-        walletService.TokenDeposit(minorId, amount, motive);
+        walletService.tokenDeposit(minorId, amount, motive);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Remover fichas", description = "Monitor remove fichas da carteira do menor.")
+    @PostMapping("/minor/{minorId}/deduct-tokens")
+    @PreAuthorize("hasRole('MONITOR')")
+    public ResponseEntity<Void> deductToken(@PathVariable Long minorId, @Valid @RequestBody DeductTokensRequestDTO dto) {
+        walletService.tokenDeduct(minorId, dto.getAmount(), dto.getMotive());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "Atualizar cotação", description = "Define quanto vale cada ficha (Ex: 1 ficha = R$ 1.00)")

@@ -86,6 +86,14 @@ public class TaskService {
         return heroMapper.toTaskDTO(task);
     }
 
+    @Transactional
+    public void deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
+            throw new RuntimeException("Tarefa com ID :" + id + " não encontrada");
+        }
+        taskRepository.deleteById(id);
+    }
+
     /**
      * Ação do MENOR: Marca a tarefa como feita.
      * Muda o status para CONCLUIDA, indicando que aguarda aprovação.
@@ -128,7 +136,7 @@ public class TaskService {
         if (task.getTokenReward() != null && task.getTokenReward() > 0) {
 
             // 1. Faz o depósito real no cofre
-            walletService.TokenDeposit(
+            walletService.tokenDeposit(
                     task.getMinor().getId(),
                     task.getTokenReward(),
                     "Recompensa pela task: " + task.getTitle()

@@ -44,6 +44,14 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newTask);
     }
 
+    @Operation(summary = "Remove uma tarefa", description = "Remove uma tarefa pelo id")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MONITOR')")
+    public ResponseEntity<?> deleteTask(@PathVariable Long id) {
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * Marca uma tarefa como concluída pelo menor.
      *

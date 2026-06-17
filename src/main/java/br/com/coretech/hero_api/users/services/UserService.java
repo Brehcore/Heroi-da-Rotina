@@ -87,6 +87,14 @@ public class UserService {
         return heroMapper.toUserDTO(user);
     }
 
+    @Transactional
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Usuário com ID: " + id + " não encontrado.");
+        }
+        userRepository.deleteById(id);
+    }
+
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
 
