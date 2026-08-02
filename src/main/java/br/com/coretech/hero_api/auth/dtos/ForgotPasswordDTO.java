@@ -1,4 +1,4 @@
-package br.com.coretech.hero_api.users.dtos;
+package br.com.coretech.hero_api.auth.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

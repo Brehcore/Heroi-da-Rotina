@@ -21,7 +21,6 @@ public class TokenTransaction {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
-
     private Wallet wallet;
 
     @Enumerated(EnumType.STRING)

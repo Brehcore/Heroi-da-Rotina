@@ -17,6 +17,7 @@ import br.com.coretech.hero_api.users.repositories.UserRepository;
 import br.com.coretech.hero_api.utils.service.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class ScreenTimeService {
     private final ScreenTimeConfigRepository configRepository;
     private final HeroMapper heroMapper;
     private final EmailNotificationService emailService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * Cria a solicitação após converter fichas em tempo, validar o limite do dia e o saldo da carteira.
@@ -95,6 +97,10 @@ public class ScreenTimeService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Menor não está vinculado a nenhuma família para receber notificações."))
                 .getId();
+
+        ScreenTimeResponseDTO dto = heroMapper.toScreenTimeResponseDTO(request);
+        String destino = "/topic/notifications/family/" + familyId;
+        simpMessagingTemplate.convertAndSend(destino, dto);
 
         // Busca todos os usuários com papel MONITOR que pertencem a esta mesma família
         List<User> monitoresDaFamilia = userRepository.findByFamilies_IdAndRole(familyId, UserRole.MONITOR);
@@ -178,6 +184,10 @@ public class ScreenTimeService {
         request.setScreenStatus(ScreenStatus.APPROVED);
         request.setApprovedBy(monitor);
         requestRepository.save(request);
+
+        ScreenTimeResponseDTO dto = heroMapper.toScreenTimeResponseDTO(request);
+        String destino = "/topic/notifications/minor/" + request.getMinor().getId();
+        simpMessagingTemplate.convertAndSend(destino, dto);
     }
 
     /**
@@ -198,5 +208,9 @@ public class ScreenTimeService {
         request.setScreenStatus(ScreenStatus.REJECTED);
         request.setApprovedBy(monitor);
         requestRepository.save(request);
+
+        ScreenTimeResponseDTO dto = heroMapper.toScreenTimeResponseDTO(request);
+        String destino = "/topic/notifications/minor/" + request.getMinor().getId();
+        simpMessagingTemplate.convertAndSend(destino, dto);
     }
 }

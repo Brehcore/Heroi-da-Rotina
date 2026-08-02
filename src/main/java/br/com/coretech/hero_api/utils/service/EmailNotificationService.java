@@ -26,7 +26,7 @@ public class EmailNotificationService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             // 3. Remetente: Além do e-mail, agora você pode colocar um Nome Bonito!
-            helper.setFrom("brehcore@gmail.com", "Herói da Rotina");
+            helper.setFrom("heroidarotina@gmail.com", "Herói da Rotina");
 
             // O .trim() evita erros caso o e-mail venha com espaço no final
             helper.setTo(to.trim());

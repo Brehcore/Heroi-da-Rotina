@@ -1,6 +1,7 @@
 package br.com.coretech.hero_api.financial.entities;
 
 import br.com.coretech.hero_api.financial.enums.InterestFrequency;
+import br.com.coretech.hero_api.screentime.entities.ScreenTimeConfig;
 import br.com.coretech.hero_api.users.entities.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -24,6 +25,9 @@ public class Wallet {
     @MapsId // Pega o ID da relação @OneToOne como PK desta entidade
     @JoinColumn(name = "user_id")
     private User minor;
+
+    @OneToOne(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ScreenTimeConfig screenTimeConfig;
 
     // O saldo atual de fichas
     @Column(nullable = false)

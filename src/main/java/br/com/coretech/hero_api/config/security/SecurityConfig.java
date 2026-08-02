@@ -43,10 +43,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Regras públicas
                         .requestMatchers("/public/**", "/auth/login").permitAll()
-                        //Endpoint público para registro
-                        .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+                        //Endpoint público para auth
+                        .requestMatchers(HttpMethod.POST, "/auth/*").permitAll()
                         //Documentação
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
+                        .requestMatchers("/ws-hero/**").permitAll()
                         // Qualquer outra requisição deve ser autenticada
                         .anyRequest().authenticated()
                 )

@@ -1,5 +1,6 @@
-package br.com.coretech.hero_api.users.entities;
+package br.com.coretech.hero_api.auth.entities;
 
+import br.com.coretech.hero_api.users.entities.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
