@@ -1,6 +1,5 @@
 package br.com.coretech.hero_api.screentime.controllers;
 
-import br.com.coretech.hero_api.screentime.dtos.ScreenTimeRequestDTO;
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeResponseDTO;
 import br.com.coretech.hero_api.screentime.dtos.TokenExchangeRequestDTO;
 import br.com.coretech.hero_api.screentime.services.ScreenTimeService;
@@ -21,18 +20,6 @@ import java.util.List;
 public class ScreenTimeRequestController {
 
     private final ScreenTimeService screenTimeService;
-
-//    @Operation(
-//            summary = "Solicitar tempo de tela (Menor)",
-//            description = "Permite que o menor solicite minutos de tela. O sistema valida automaticamente o limite do dia e o saldo de fichas."
-//    )
-//    @PostMapping("/time")
-//    @PreAuthorize("isAuthenticated()")
-//    public ResponseEntity<ScreenTimeResponseDTO> requestScreenTime(
-//            @RequestBody @Valid ScreenTimeRequestDTO requestDTO) {
-//        ScreenTimeResponseDTO response = screenTimeService.requestScreenTime(requestDTO);
-//        return ResponseEntity.ok(response);
-//    }
 
     @Operation(
             summary = "Trocar fichas por tempo de tela",
@@ -80,5 +67,25 @@ public class ScreenTimeRequestController {
             @RequestParam Long monitorId) {
         screenTimeService.rejectRequest(requestId, monitorId);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Ação via E-mail", description = "Processa aprovação ou rejeição vinda do clique no e-mail sem precisar logar.")
+    @GetMapping("/email-action")
+    public ResponseEntity<String> handleEmailAction(
+            @RequestParam String token,
+            @RequestParam String action,
+            @RequestParam Long monitorId) {
+
+        // Chama o service que devolve o HTML
+        String htmlMessage = screenTimeService.processEmailAction(token, action, monitorId);
+
+        // Retorna um HTML básico para a tela do navegador do Monitor não ficar feia
+        String responseHtml = "<html><body style='text-align: center; font-family: sans-serif; padding-top: 50px;'>"
+                + htmlMessage
+                + "</body></html>";
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/html; charset=UTF-8")
+                .body(responseHtml);
     }
 }

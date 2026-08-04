@@ -41,14 +41,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Regras públicas
                         .requestMatchers("/public/**", "/auth/login").permitAll()
-                        //Endpoint público para auth
                         .requestMatchers(HttpMethod.POST, "/auth/*").permitAll()
-                        //Documentação
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                         .requestMatchers("/ws-hero/**").permitAll()
-                        // Qualquer outra requisição deve ser autenticada
+                        .requestMatchers("/api/screentime/request/email-action**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

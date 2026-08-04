@@ -17,6 +17,7 @@ import br.com.coretech.hero_api.users.repositories.UserRepository;
 import br.com.coretech.hero_api.utils.service.EmailNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,9 @@ public class ScreenTimeService {
     private final HeroMapper heroMapper;
     private final EmailNotificationService emailService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+
+    @Value("${app.backend.url}")
+    private String backendUrl;
 
     /**
      * Cria a solicitação após converter fichas em tempo, validar o limite do dia e o saldo da carteira.
@@ -81,15 +85,13 @@ public class ScreenTimeService {
             throw new RuntimeException("Saldo insuficiente. Você possui apenas " + wallet.getTokenBalances() + " fichas.");
         }
 
-        // Obs: Se a dedução do saldo não estiver sendo feita dentro de getScreenTimeRequest(),
-        // faça a dedução e salve a carteira aqui:
-        // wallet.setBalance(wallet.getBalance() - tokensToSpend);
-        // walletRepository.save(wallet);
-
-        // 6. Prepara a entidade com os minutos calculados
+        // 6. Prepara a entidade com os minutos calculados e GERA O TOKEN
         ScreenTimeRequest request = getScreenTimeRequest(minutesRequested, config, wallet);
 
-        // Salva a solicitação no banco de dados
+        // Geração do token único de aprovação
+        String tokenDeAprovacao = java.util.UUID.randomUUID().toString();
+        request.setApprovalToken(tokenDeAprovacao);
+
         request = requestRepository.save(request);
 
         // Como o modelo mapeia que um usuário pode ter várias famílias, pegamos a primeira cadastrada do menor
@@ -104,34 +106,41 @@ public class ScreenTimeService {
 
         // Busca todos os usuários com papel MONITOR que pertencem a esta mesma família
         List<User> monitoresDaFamilia = userRepository.findByFamilies_IdAndRole(familyId, UserRole.MONITOR);
-
         String nomeDoMenor = wallet.getMinor().getName();
         String assunto = "🎮 Pedido de Tempo de Tela: " + nomeDoMenor;
-        String corpoHtml = String.format("""
-            <div style="font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px;">
-                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-                    <div style="background-color: #4A90E2; padding: 20px; text-align: center; color: white;">
-                        <h2 style="margin: 0;">🎮 Tempo de Tela Solicitado!</h2>
-                    </div>
-                    <div style="padding: 30px; color: #333333; line-height: 1.6;">
-                        <p>Olá, Monitor!</p>
-                        <p>O herói <strong>%s</strong> acabou de trocar fichas por minutos de diversão.</p>
-                        <div style="background-color: #f9f9f9; border-left: 4px solid #4A90E2; padding: 15px; margin: 20px 0;">
-                            <p style="margin: 0; font-size: 16px;">🪙 <strong>Fichas gastas:</strong> %d</p>
-                            <p style="margin: 10px 0 0 0; font-size: 16px;">⏱️ <strong>Tempo resgatado:</strong> %d minutos</p>
+
+        // Dispara o e-mail customizado para CADA monitor, colocando o ID dele no link
+        for (User monitor : monitoresDaFamilia) {
+
+            // Montando os links de ação
+            String linkAprovar = String.format("%s/api/screentime/request/email-action?token=%s&action=APPROVE&monitorId=%d", backendUrl, tokenDeAprovacao, monitor.getId());
+            String linkRejeitar = String.format("%s/api/screentime/request/email-action?token=%s&action=REJECT&monitorId=%d", backendUrl, tokenDeAprovacao, monitor.getId());
+
+            String corpoHtml = String.format("""
+                <div style="font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                        <div style="background-color: #4A90E2; padding: 20px; text-align: center; color: white;">
+                            <h2 style="margin: 0;">🎮 Tempo de Tela Solicitado!</h2>
                         </div>
-                        <p style="font-size: 14px; color: #777;">Acompanhe o painel do aplicativo para gerenciar os limites e o histórico.</p>
+                        <div style="padding: 30px; color: #333333; line-height: 1.6;">
+                            <p>Olá, %s!</p>
+                            <p>O herói <strong>%s</strong> acabou de trocar fichas por minutos de diversão.</p>
+                            <div style="background-color: #f9f9f9; border-left: 4px solid #4A90E2; padding: 15px; margin: 20px 0;">
+                                <p style="margin: 0; font-size: 16px;">🪙 <strong>Fichas gastas:</strong> %d</p>
+                                <p style="margin: 10px 0 0 0; font-size: 16px;">⏱️ <strong>Tempo resgatado:</strong> %d minutos</p>
+                            </div>
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="%s" style="background-color: #4CAF50; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px; display: inline-block;">✅ Aprovar</a>
+                                <a href="%s" style="background-color: #F44336; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">❌ Rejeitar</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            """, nomeDoMenor, tokensToSpend, minutesRequested);
+                """, monitor.getName(), nomeDoMenor, tokensToSpend, minutesRequested, linkAprovar, linkRejeitar);
 
-        // Dispara o e-mail de forma assíncrona para cada monitor encontrado
-        for (User monitor : monitoresDaFamilia) {
             emailService.sendEmail(monitor.getEmail(), assunto, corpoHtml);
         }
 
-        // 7. Converte e retorna
         return heroMapper.toScreenTimeResponseDTO(request);
     }
 
@@ -176,7 +185,7 @@ public class ScreenTimeService {
         User monitor = userRepository.findById(monitorId)
                 .orElseThrow(() -> new RuntimeException("Monitor não encontrado"));
 
-        // Deduz as fichas usando o valor calculado na hora do pedido
+        // Deduz as fichas da carteira do menor
         walletService.withdrawTokens(request.getMinor().getId(),
                 request.getTokenCost(),
                 "Tempo de tela aprovado: " + request.getRequestedMinutes() + "min");
@@ -186,8 +195,20 @@ public class ScreenTimeService {
         requestRepository.save(request);
 
         ScreenTimeResponseDTO dto = heroMapper.toScreenTimeResponseDTO(request);
-        String destino = "/topic/notifications/minor/" + request.getMinor().getId();
-        simpMessagingTemplate.convertAndSend(destino, dto);
+
+        // Resgata o ID da família
+        Long familyId = request.getMinor().getFamilies().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Menor não está vinculado a nenhuma família."))
+                .getId();
+
+        // 1º ENVIO: Para o Menor (Avisa que foi aprovado)
+        String destinoMenor = "/topic/notifications/minor/" + request.getMinor().getId();
+        simpMessagingTemplate.convertAndSend(destinoMenor, dto);
+
+        // 2º ENVIO: Para a Família (Avisa os monitores para removerem o card do sininho)
+        String destinoFamilia = "/topic/notifications/family/" + familyId;
+        simpMessagingTemplate.convertAndSend(destinoFamilia, dto);
     }
 
     /**
@@ -210,7 +231,46 @@ public class ScreenTimeService {
         requestRepository.save(request);
 
         ScreenTimeResponseDTO dto = heroMapper.toScreenTimeResponseDTO(request);
-        String destino = "/topic/notifications/minor/" + request.getMinor().getId();
-        simpMessagingTemplate.convertAndSend(destino, dto);
+
+        Long familyId = request.getMinor().getFamilies().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Menor não está vinculado a nenhuma família."))
+                .getId();
+
+        // 1º ENVIO: Para o Menor (Avisa que foi rejeitado)
+        String destinoMenor = "/topic/notifications/minor/" + request.getMinor().getId();
+        simpMessagingTemplate.convertAndSend(destinoMenor, dto);
+
+        // 2º ENVIO: Para a Família (Avisa os monitores para removerem o card do sininho)
+        String destinoFamilia = "/topic/notifications/family/" + familyId;
+        simpMessagingTemplate.convertAndSend(destinoFamilia, dto);
+    }
+
+    /**
+     * Processa a ação vinda diretamente do clique do e-mail.
+     * Retorna uma String com uma mensagem amigável em HTML para exibir no navegador.
+     */
+    @Transactional
+    public String processEmailAction(String token, String action, Long monitorId) {
+        ScreenTimeRequest request = requestRepository.findByApprovalToken(token)
+                .orElseThrow(() -> new RuntimeException("Solicitação não encontrada ou link inválido."));
+
+        if (request.getScreenStatus() != ScreenStatus.PENDING) {
+            return "<h3>⚠️ Esta solicitação já foi respondida anteriormente.</h3>";
+        }
+
+        try {
+            if ("APPROVE".equalsIgnoreCase(action)) {
+                approveRequest(request.getId(), monitorId);
+                return "<h3 style='color: green;'>✅ Sucesso! O tempo de tela foi APROVADO e o herói já foi notificado.</h3>";
+            } else if ("REJECT".equalsIgnoreCase(action)) {
+                rejectRequest(request.getId(), monitorId);
+                return "<h3 style='color: red;'>❌ Solicitação REJEITADA. Nenhuma ficha foi descontada.</h3>";
+            } else {
+                return "<h3>Ação inválida.</h3>";
+            }
+        } catch (Exception e) {
+            return "<h3>Erro ao processar: " + e.getMessage() + "</h3>";
+        }
     }
 }

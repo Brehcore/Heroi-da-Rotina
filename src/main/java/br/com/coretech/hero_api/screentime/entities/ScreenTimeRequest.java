@@ -39,4 +39,7 @@ public class ScreenTimeRequest {
 
     @ManyToOne
     private User approvedBy;
+
+    @Column(name = "approval_token", unique = true)
+    private String approvalToken;
 }
