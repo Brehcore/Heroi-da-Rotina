@@ -54,9 +54,8 @@ public class User implements UserDetails {
     @JsonIgnore
     private Set<Family> families = new HashSet<>();
 
-    // A wallet do usuário (só será preenchida se role = ROLE_MENOR)
     @JsonIgnore
-    @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "minor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Wallet wallet;
 
     @Column(name = "profile_picture_url")

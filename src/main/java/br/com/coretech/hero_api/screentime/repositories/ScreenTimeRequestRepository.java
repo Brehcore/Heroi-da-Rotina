@@ -13,4 +13,6 @@ public interface ScreenTimeRequestRepository extends JpaRepository<ScreenTimeReq
     List<ScreenTimeRequest> findAllByMinorFamiliesIdAndScreenStatus(Long familyId, ScreenStatus status);
 
     Optional<ScreenTimeRequest> findByApprovalToken(String approvalToken);
+
+    void deleteByMinorId(Long minorId);
 }

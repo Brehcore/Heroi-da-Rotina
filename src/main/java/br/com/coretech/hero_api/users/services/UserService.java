@@ -1,6 +1,8 @@
 package br.com.coretech.hero_api.users.services;
 
 import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.screentime.repositories.ScreenTimeRequestRepository;
+import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.enums.UserRole;
 import br.com.coretech.hero_api.users.dtos.UserCreateDTO;
@@ -26,6 +28,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final FamilyRepository familyRepository;
     private final WalletRepository walletRepository;
+    private final TaskRepository taskRepository;
+    private final ScreenTimeRequestRepository screenTimeRequestRepository;
     private final HeroMapper heroMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -81,6 +85,12 @@ public class UserService {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("Usuário com ID: " + id + " não encontrado.");
         }
+
+        // 1. Apagamos apenas o que não tem Cascade automático a partir do usuário
+        screenTimeRequestRepository.deleteByMinorId(id);
+        taskRepository.deleteByMinorId(id);
+
+        // 2. O Hibernate deleta a Wallet (e as transações dela) AUTOMATICAMENTE!
         userRepository.deleteById(id);
     }
 

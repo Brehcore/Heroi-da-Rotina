@@ -31,4 +31,5 @@ public interface UserRepository extends JpaRepository<User, Long>
 
     // Busca todos os usuários de uma família específica que possuem um determinado papel (Role)
     List<User> findByFamilies_IdAndRole(Long familyId, UserRole role);
+
 }

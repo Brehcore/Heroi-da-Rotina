@@ -17,13 +17,12 @@ import java.util.List;
 public class Wallet {
 
     @Id
-    private Long id; //  O mesmo ID do Usuário (relação 1-para-1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // Define quem é o dono desta carteira
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId // Pega o ID da relação @OneToOne como PK desta entidade
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     private User minor;
 
     @OneToOne(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)

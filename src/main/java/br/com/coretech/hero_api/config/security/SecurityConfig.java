@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/*").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                         .requestMatchers("/ws-hero/**").permitAll()
-                        .requestMatchers("/api/screentime/request/email-action**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/screentime/request/email-action", "/screentime/request/email-action" ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

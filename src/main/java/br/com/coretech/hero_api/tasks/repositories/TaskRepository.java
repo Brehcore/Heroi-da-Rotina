@@ -28,4 +28,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     // O Spring monta o SQL com LIMIT, OFFSET e o WHERE correto automaticamente!
     Page<Task> findByMinor_Families_Id(Long familyId, Pageable pageable);
+
+    void deleteByMinorId(Long minorId);
 }
