@@ -31,26 +31,25 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(nullable = false)
-    private String name; // Ex: "Lucas Heitor Soares Gomes de Vasconcelos" [cite: 7]
+    private String name;
 
     @Column(nullable = false, unique = true)
-    private String email; // Será o login
+    private String email;
 
     @Column(nullable = false)
-    private String password; // Será armazenada com hash (BCrypt)
+    private String password;
 
-    // Diz se é MONITOR ou MENOR
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
 
-    // A quais famílias este usuário pertence (Um monitor pode ter várias)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "tb_users_families",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "family_id")
     )
+
     @JsonIgnore
     private Set<Family> families = new HashSet<>();
 
