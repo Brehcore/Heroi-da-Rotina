@@ -22,18 +22,6 @@ public class ScreenTimeRequestController {
     private final ScreenTimeService screenTimeService;
 
     @Operation(
-            summary = "Trocar fichas por tempo de tela",
-            description = "Permite que o menor solicite a troca de fichas por minutos de tela. O sistema calcula o tempo automaticamente, e valida o limite do dia e o saldo de fichas."
-    )
-    @PostMapping("/exchange-tokens")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ScreenTimeResponseDTO> exchangeTokensForTime(
-            @RequestBody @Valid TokenExchangeRequestDTO requestDTO) {
-        ScreenTimeResponseDTO response = screenTimeService.exchangeTokensForTime(requestDTO);
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(
             summary = "Aprovar solicitação (Monitor)",
             description = "Permite que um monitor aprove um pedido pendente. Ao aprovar, as fichas são debitadas da carteira do menor."
     )
@@ -87,5 +75,17 @@ public class ScreenTimeRequestController {
         return ResponseEntity.ok()
                 .header("Content-Type", "text/html; charset=UTF-8")
                 .body(responseHtml);
+    }
+
+    @Operation(
+            summary = "Trocar fichas por tempo de tela",
+            description = "Permite que o menor solicite a troca de fichas por minutos de tela. O sistema calcula o tempo automaticamente, e valida o limite do dia e o saldo de fichas."
+    )
+    @PostMapping("/exchange-tokens")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ScreenTimeResponseDTO> exchangeTokensForTime(
+            @RequestBody @Valid TokenExchangeRequestDTO requestDTO) {
+        ScreenTimeResponseDTO response = screenTimeService.exchangeTokensForTime(requestDTO);
+        return ResponseEntity.ok(response);
     }
 }

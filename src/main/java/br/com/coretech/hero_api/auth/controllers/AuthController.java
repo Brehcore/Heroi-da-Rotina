@@ -10,9 +10,13 @@ import br.com.coretech.hero_api.users.dtos.UserRegisterDTO;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -29,6 +33,9 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @Value("${application.security.jwt.cookie-secure:false}")
+    private boolean cookieSecure;
+
     @Operation(summary = "Registrar usuário", description = "Registra um novo usuário Monitor")
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> register(@RequestBody UserRegisterDTO dto) {
@@ -38,9 +45,38 @@ public class AuthController {
 
     @Operation(summary = "Realiza login no sistema")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
-        LoginResponseDTO response = authService.login(dto);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto, HttpServletResponse response) {
+        LoginResponseDTO loginResponse = authService.login(dto);
+
+        // Cria o cookie seguro HttpOnly
+        ResponseCookie cookie = ResponseCookie.from("access_token", loginResponse.getToken())
+                .httpOnly(true)
+                .secure(cookieSecure) // false em desenvolvimento local (HTTP), true em produção (HTTPS)
+                .path("/")
+                .maxAge(86400) // 24 horas (mesmo tempo do token)
+                .sameSite("Lax") // Proteção contra CSRF mantendo navegação padrão entre abas
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        // Retorna o DTO com dados do usuário (o token continua indo caso clientes externos usem, mas o Angular ignorará)
+        return ResponseEntity.ok(loginResponse);
+    }
+
+    @Operation(summary = "Logout do sistema", description = "Invalida o cookie de autenticação")
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        // Remove o cookie definindo maxAge como 0
+        ResponseCookie cookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Solicitar reset", description = "Solicita o reset para enviar um token no e-mail")

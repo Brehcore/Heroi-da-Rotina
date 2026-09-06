@@ -1,4 +1,4 @@
-package br.com.coretech.hero_api.jwt.exceptions;
+package br.com.coretech.hero_api.jwt.security;
 
 import br.com.coretech.hero_api.exceptions.StandardError;
 import com.fasterxml.jackson.databind.ObjectMapper;

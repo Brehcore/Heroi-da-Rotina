@@ -1,7 +1,7 @@
 package br.com.coretech.hero_api.config.security;
 
-import br.com.coretech.hero_api.jwt.exceptions.JwtAuthenticationEntryPoint;
-import br.com.coretech.hero_api.jwt.exceptions.JwtAuthenticationFilter;
+import br.com.coretech.hero_api.jwt.security.JwtAuthenticationEntryPoint;
+import br.com.coretech.hero_api.jwt.security.JwtAuthenticationFilter;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

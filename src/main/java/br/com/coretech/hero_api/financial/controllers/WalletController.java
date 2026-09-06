@@ -18,10 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Controlador REST responsável por gerenciar operações relacionadas às carteiras dos menores.
- * Fornece endpoints para consulta de saldo e dados das carteiras.
- */
 @Tag(name = "Carteira", description = "Responsável por gerenciar operações relacionadas às carteiras dos menores")
 @RestController
 @RequestMapping("/api/wallets")
@@ -30,27 +26,6 @@ import org.springframework.web.bind.annotation.*;
 public class WalletController {
 
     private final WalletService walletService;
-
-    /**
-     * Busca os dados completos da carteira de um menor (Saldos, Cotação e Config. de Juros)
-     * @apiNote Pode ser acessado pelo MENOR (para ver seus dados) ou pelo MONITOR.
-     */
-    @Operation(summary = "Buscar Carteira", description = "Retorna os saldos, a cotação atual da ficha e as configurações de rendimento.")
-    @GetMapping("/minor/{minorId}")
-    @PreAuthorize("isAuthenticated()") // Permite que tanto o Monitor quanto o Menor logado possam ver
-    public ResponseEntity<WalletResponseDTO> getWallet(@PathVariable Long minorId) {
-        WalletResponseDTO walletDto = walletService.getWalletByMinorId(minorId);
-        return ResponseEntity.ok(walletDto);
-    }
-
-    @Operation(summary = "Buscar Histórico", description = "Retorna o histórico financeiro do menor")
-    @GetMapping("/minor/{minorId}/transactions")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<TransactionDTO>> getMinorTransactionalHistory(@PathVariable Long minorId,
-                                                                             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-            Page<TransactionDTO> transactions = walletService.getMinorTransactionalHistory(minorId, pageable);
-            return ResponseEntity.ok(transactions);
-    }
 
     @Operation(summary = "Adicionar fichas", description = "Monitor adiciona fichas à carteira do menor.")
     @PostMapping("/minor/{minorId}/deposit-tokens")
@@ -95,4 +70,20 @@ public class WalletController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Buscar Carteira", description = "Retorna os saldos, a cotação atual da ficha e as configurações de rendimento.")
+    @GetMapping("/minor/{minorId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<WalletResponseDTO> getWallet(@PathVariable Long minorId) {
+        WalletResponseDTO walletDto = walletService.getWalletByMinorId(minorId);
+        return ResponseEntity.ok(walletDto);
+    }
+
+    @Operation(summary = "Buscar Histórico", description = "Retorna o histórico financeiro do menor")
+    @GetMapping("/minor/{minorId}/transactions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<TransactionDTO>> getMinorTransactionalHistory(@PathVariable Long minorId,
+                                                                             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            Page<TransactionDTO> transactions = walletService.getMinorTransactionalHistory(minorId, pageable);
+            return ResponseEntity.ok(transactions);
+    }
 }

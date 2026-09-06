@@ -1,6 +1,7 @@
 package br.com.coretech.hero_api.tasks.services;
 
 import br.com.coretech.hero_api.financial.services.WalletService;
+import br.com.coretech.hero_api.gamification.services.GamificationService;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.tasks.dtos.TaskCreateDTO;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
@@ -28,6 +29,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final WalletService walletService;
+    private final GamificationService  gamificationService;
     private final HeroMapper heroMapper;
     private final EmailNotificationService emailService;
 
@@ -132,17 +134,23 @@ public class TaskService {
         task.setApprovalDate(LocalDateTime.now());
         taskRepository.save(task);
 
-        // Se houver recompensa em fichas, integra com o WalletService e Notifica
+        // 2. Concede XP na Gamificação (acontece para qualquer tarefa aprovada)
+        gamificationService.grantXpForApprovedTask(
+                task.getMinor().getId(),
+                task.getTokenReward()
+        );
+
+        // 3. Se houver recompensa em fichas, integra com o WalletService e Notifica
         if (task.getTokenReward() != null && task.getTokenReward() > 0) {
 
-            // 1. Faz o depósito real no cofre
+            // Faz o depósito real no cofre
             walletService.tokenDeposit(
                     task.getMinor().getId(),
                     task.getTokenReward(),
                     "Recompensa pela task: " + task.getTitle()
             );
 
-            // 2. Dispara o e-mail de comemoração
+            // Dispara o e-mail de comemoração
             User menor = task.getMinor();
             if (UserRole.MINOR.equals(menor.getRole())) {
                 String assunto = "🎉 Fichas na Conta! Parabéns pelo seu esforço!";
