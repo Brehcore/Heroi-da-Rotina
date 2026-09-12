@@ -1,5 +1,7 @@
 package br.com.coretech.hero_api.exceptions;
 
+import br.com.coretech.hero_api.financial.transaction.exception.InsufficientBalanceException;
+import br.com.coretech.hero_api.tasks.exceptions.InvalidTaskStatusException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -78,6 +80,21 @@ public class ResourceExceptionHandler {
                 status.value(),
                 "Erro de autenticação",
                 sanitize(message),
+                sanitize(request.getRequestURI())
+        );
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(InvalidTaskStatusException.class)
+    public ResponseEntity<StandardError> handleInvalidTaskStatus(InvalidTaskStatusException e, HttpServletRequest request) {
+
+        HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+
+        StandardError err = new StandardError(
+                Instant.now(),
+                status.value(),
+                "Business Rule Violation",
+                sanitize(e.getMessage()),
                 sanitize(request.getRequestURI())
         );
         return ResponseEntity.status(status).body(err);

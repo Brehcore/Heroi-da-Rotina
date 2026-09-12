@@ -1,11 +1,12 @@
 package br.com.coretech.hero_api.tasks.services;
 
-import br.com.coretech.hero_api.financial.services.WalletService;
+import br.com.coretech.hero_api.financial.transaction.service.TransactionService;
 import br.com.coretech.hero_api.gamification.services.GamificationService;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.tasks.dtos.TaskCreateDTO;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
+import br.com.coretech.hero_api.tasks.exceptions.InvalidTaskStatusException;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.tasks.enums.TaskStatus;
 import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
@@ -28,7 +29,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
-    private final WalletService walletService;
+    private final TransactionService transactionService;
     private final GamificationService  gamificationService;
     private final HeroMapper heroMapper;
     private final EmailNotificationService emailService;
@@ -89,11 +90,14 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long id) {
-        if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Tarefa com ID :" + id + " não encontrada");
+    public void deleteTask(Long tarefaId) {
+        Task task = taskRepository.findById(tarefaId)
+                .orElseThrow(() -> new RuntimeException("Task não encontrada com ID: " + tarefaId));
+        // Regra de negócio: só pode excluir se estiver PENDENTE
+        if (task.getStatus() != TaskStatus.PENDING) {
+            throw new InvalidTaskStatusException("Apenas tarefas PENDENTES podem ser excluídas.");
         }
-        taskRepository.deleteById(id);
+        taskRepository.deleteById(tarefaId);
     }
 
     /**
@@ -144,7 +148,7 @@ public class TaskService {
         if (task.getTokenReward() != null && task.getTokenReward() > 0) {
 
             // Faz o depósito real no cofre
-            walletService.tokenDeposit(
+            transactionService.tokenDeposit(
                     task.getMinor().getId(),
                     task.getTokenReward(),
                     "Recompensa pela task: " + task.getTitle()
@@ -200,10 +204,9 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
-    public List<TaskResponseDTO> listForMinor(Long minorId) {
-        return taskRepository.findAllByMinorId(minorId).stream()
-                .map(heroMapper::toTaskDTO)
-                .collect(Collectors.toList());
+    public Page<TaskResponseDTO> listForMinor(Long minorId, Pageable pageable) {
+        Page<Task> taskPage = taskRepository.findByMinorId(minorId, pageable);
+        return taskPage.map(heroMapper::toTaskDTO);
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,6 @@
 package br.com.coretech.hero_api.users.entities;
 
-import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
 import br.com.coretech.hero_api.users.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

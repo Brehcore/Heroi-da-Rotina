@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -77,12 +79,14 @@ public class TaskController {
         return ResponseEntity.ok(taskService.listForApproval(familyId));
     }
 
-    //TODO: Editar para paginação aqui e no serviço
-    @Operation(summary = "Listar todas as tarefas", description = "Lista todas as tarefas de um menor específico.")
+    @Operation(summary = "Listar tarefas do menor com paginação", description = "Lista as tarefas de um menor com suporte a paginação e ordenação.")
     @GetMapping("/minor/{minorId}")
-    @PreAuthorize( "isAuthenticated()")
-    public ResponseEntity<List<TaskResponseDTO>> listAllTasksForMinor(@PathVariable Long minorId) {
-        return ResponseEntity.ok(taskService.listForMinor(minorId));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Page<TaskResponseDTO>> listAllTasksForMinor(
+            @PathVariable Long minorId,
+            @PageableDefault(size = 8, sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(taskService.listForMinor(minorId, pageable));
     }
 
     @Operation(summary = "Marcar concluída", description = "Marca uma tarefa como concluída pelo menor")

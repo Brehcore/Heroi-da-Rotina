@@ -1,7 +1,7 @@
 package br.com.coretech.hero_api.screentime.services;
 
-import br.com.coretech.hero_api.financial.entities.Wallet;
-import br.com.coretech.hero_api.financial.repositories.WalletRepository;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
+import br.com.coretech.hero_api.financial.wallet.repository.WalletRepository;
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeConfigDTO;
 import br.com.coretech.hero_api.screentime.entities.ScreenTimeConfig;
 import br.com.coretech.hero_api.screentime.repositories.ScreenTimeConfigRepository;

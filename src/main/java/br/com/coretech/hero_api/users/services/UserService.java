@@ -1,6 +1,6 @@
 package br.com.coretech.hero_api.users.services;
 
-import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
 import br.com.coretech.hero_api.screentime.repositories.ScreenTimeRequestRepository;
 import br.com.coretech.hero_api.tasks.repositories.TaskRepository;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
@@ -9,7 +9,7 @@ import br.com.coretech.hero_api.users.dtos.UserCreateDTO;
 import br.com.coretech.hero_api.users.entities.Family;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.mappers.HeroMapper;
-import br.com.coretech.hero_api.financial.repositories.WalletRepository;
+import br.com.coretech.hero_api.financial.wallet.repository.WalletRepository;
 import br.com.coretech.hero_api.users.repositories.FamilyRepository;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,9 @@
 package br.com.coretech.hero_api.gamification.services;
 
+import br.com.coretech.hero_api.exceptions.ResourceNotFoundException;
+import br.com.coretech.hero_api.gamification.dtos.GamificationResponseDTO;
 import br.com.coretech.hero_api.gamification.entities.UserGamification;
+import br.com.coretech.hero_api.gamification.mappers.GamificationMapper;
 import br.com.coretech.hero_api.gamification.repositories.UserGamificationRepository;
 import br.com.coretech.hero_api.users.entities.User;
 import br.com.coretech.hero_api.users.repositories.UserRepository;
@@ -16,6 +19,19 @@ public class GamificationService {
 
     private final UserGamificationRepository userGamificationRepository;
     private final UserRepository userRepository;
+    private final GamificationMapper gamificationMapper;
+
+    /**
+     * Consulta os dados de gamificação e nível do menor.
+     * Se o registro ainda não existir, cria o perfil inicial no Nível 1.
+     */
+    @Transactional
+    public GamificationResponseDTO getGamificationByMinorId(Long minorId) {
+        UserGamification gamification = userGamificationRepository.findByUserId(minorId)
+                .orElseGet(() -> createInitialGamification(minorId));
+
+        return gamificationMapper.toDTO(gamification);
+    }
 
     /**
      * Concede XP ao menor com base nas fichas da tarefa aprovada.
@@ -57,13 +73,12 @@ public class GamificationService {
     }
 
     private int calculateNextTargetXp(int nextLevel) {
-        // Curva suave: Nível 1 = 100, Nível 2 = 200, Nível 3 = 350, Nível 4 = 550 (+ level * 50)
         return 100 + (nextLevel * 50);
     }
 
     private UserGamification createInitialGamification(Long minorId) {
         User user = userRepository.findById(minorId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado para gamificação: " + minorId));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado para gamificação: " + minorId));
 
         UserGamification initial = new UserGamification();
         initial.setUser(user);

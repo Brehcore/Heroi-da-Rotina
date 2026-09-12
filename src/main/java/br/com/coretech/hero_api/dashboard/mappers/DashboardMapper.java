@@ -3,7 +3,7 @@ package br.com.coretech.hero_api.dashboard.mappers;
 import br.com.coretech.hero_api.dashboard.dtos.TaskSummaryDTO;
 import br.com.coretech.hero_api.dashboard.dtos.WalletSummaryDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
-import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 

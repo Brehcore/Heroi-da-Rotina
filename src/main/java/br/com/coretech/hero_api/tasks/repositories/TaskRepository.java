@@ -66,4 +66,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+
+    Page<Task> findByMinorId(Long minorId, Pageable pageable);
 }

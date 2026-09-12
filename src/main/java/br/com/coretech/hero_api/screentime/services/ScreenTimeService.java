@@ -1,8 +1,9 @@
 package br.com.coretech.hero_api.screentime.services;
 
-import br.com.coretech.hero_api.financial.entities.Wallet;
-import br.com.coretech.hero_api.financial.repositories.WalletRepository;
-import br.com.coretech.hero_api.financial.services.WalletService;
+import br.com.coretech.hero_api.financial.transaction.service.TransactionService;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
+import br.com.coretech.hero_api.financial.wallet.repository.WalletRepository;
+import br.com.coretech.hero_api.financial.wallet.service.WalletService;
 import br.com.coretech.hero_api.mappers.HeroMapper;
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeResponseDTO;
 import br.com.coretech.hero_api.screentime.dtos.TokenExchangeRequestDTO;
@@ -32,6 +33,7 @@ public class ScreenTimeService {
 
     private final UserRepository userRepository;
     private final WalletService walletService;
+    private final TransactionService transactionService;
     private final WalletRepository walletRepository;
     private final ScreenTimeRequestRepository requestRepository;
     private final ScreenTimeConfigRepository configRepository;
@@ -186,7 +188,7 @@ public class ScreenTimeService {
                 .orElseThrow(() -> new RuntimeException("Monitor não encontrado"));
 
         // Deduz as fichas da carteira do menor
-        walletService.withdrawTokens(request.getMinor().getId(),
+        transactionService.withdrawTokens(request.getMinor().getId(),
                 request.getTokenCost(),
                 "Tempo de tela aprovado: " + request.getRequestedMinutes() + "min");
 

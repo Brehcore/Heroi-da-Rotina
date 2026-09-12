@@ -1,6 +1,6 @@
 package br.com.coretech.hero_api.screentime.entities;
 
-import br.com.coretech.hero_api.financial.entities.Wallet;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

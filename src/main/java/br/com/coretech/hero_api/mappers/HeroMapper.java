@@ -1,15 +1,15 @@
 package br.com.coretech.hero_api.mappers;
 
-import br.com.coretech.hero_api.financial.dtos.WalletResponseDTO;
-import br.com.coretech.hero_api.financial.dtos.TransactionDTO;
+import br.com.coretech.hero_api.financial.wallet.dto.WalletResponseDTO;
+import br.com.coretech.hero_api.financial.transaction.dto.TransactionDTO;
 import br.com.coretech.hero_api.screentime.dtos.ScreenTimeResponseDTO;
 import br.com.coretech.hero_api.screentime.entities.ScreenTimeRequest;
 import br.com.coretech.hero_api.tasks.dtos.TaskResponseDTO;
 import br.com.coretech.hero_api.tasks.entities.Task;
 import br.com.coretech.hero_api.users.dtos.FamilyResponseDTO;
-import br.com.coretech.hero_api.financial.entities.Wallet;
-import br.com.coretech.hero_api.financial.entities.MoneyTransaction;
-import br.com.coretech.hero_api.financial.entities.TokenTransaction;
+import br.com.coretech.hero_api.financial.wallet.entity.Wallet;
+import br.com.coretech.hero_api.financial.wallet.entity.MoneyTransaction;
+import br.com.coretech.hero_api.financial.transaction.entity.TokenTransaction;
 import br.com.coretech.hero_api.users.dtos.UserResponseDTO;
 import br.com.coretech.hero_api.users.entities.Family;
 import br.com.coretech.hero_api.users.entities.User;
